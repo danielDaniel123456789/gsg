@@ -1,11 +1,42 @@
 <section id="contact">
     <h2>Enviar una Nota</h2>
-    <form action="send_email.php" method="post">
+    <form id="email-form">
       <div>
         <label for="note">Nota:</label>
         <textarea id="note" name="note" rows="5" required></textarea>
       </div>
       <button type="submit">Enviar Nota</button>
     </form>
+    <p id="status"></p>
   </section>
-  
+  <script src="https://cdn.emailjs.com/dist/email.min.js"></script>
+<script>
+  // Inicializar EmailJS
+  emailjs.init("TU_USER_ID"); // Reemplaza con tu User ID de EmailJS
+
+  const form = document.getElementById('email-form');
+  form.addEventListener('submit', function (event) {
+    event.preventDefault();
+
+    const note = document.getElementById('note').value;
+
+    // Configurar los parámetros del correo
+    const templateParams = {
+      message: note,
+    };
+
+    // Enviar el correo
+    emailjs
+      .send('TU_SERVICE_ID', 'TU_TEMPLATE_ID', templateParams)
+      .then(
+        function () {
+          document.getElementById('status').textContent = '¡Nota enviada exitosamente!';
+          form.reset();
+        },
+        function (error) {
+          document.getElementById('status').textContent = 'Hubo un error al enviar la nota. Intenta de nuevo.';
+          console.error('Error:', error);
+        }
+      );
+  });
+</script>
