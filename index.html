@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Formulario de Inserción</title>
+    <title>Formulario de Inserción y Lectura de Datos</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
 </head>
 <body>
@@ -22,6 +22,11 @@
         <button type="submit">Insertar Datos</button>
     </form>
 
+    <h2>Datos Insertados:</h2>
+    <ul id="dataList">
+        <!-- Los datos insertados se mostrarán aquí -->
+    </ul>
+
     <script>
         // Inicializa el cliente de Supabase
         const supabaseUrl = 'https://hqohprqlximcjqewgqmd.supabase.co'
@@ -38,7 +43,7 @@
 
             // Inserta los datos en la tabla (reemplaza "your_table" con el nombre de tu tabla)
             const { data, error } = await supabase
-                .from('your_table')
+                .from('your_table')  // Reemplaza 'your_table' con el nombre de tu tabla
                 .insert([
                     { name: name, email: email }
                 ])
@@ -48,8 +53,32 @@
             } else {
                 console.log('Datos insertados:', data)
                 alert('¡Datos insertados correctamente!')
+                // Vuelve a cargar los datos después de la inserción
+                loadData()
             }
         })
+
+        // Función para cargar los datos desde la base de datos
+        async function loadData() {
+            const { data, error } = await supabase
+                .from('your_table')  // Asegúrate de que el nombre de la tabla sea correcto
+                .select('*')
+
+            if (error) {
+                console.error('Error al cargar los datos:', error)
+            } else {
+                const dataList = document.getElementById('dataList')
+                dataList.innerHTML = ''  // Limpia la lista antes de mostrar los datos
+                data.forEach(item => {
+                    const listItem = document.createElement('li')
+                    listItem.textContent = `Nombre: ${item.name}, Correo: ${item.email}`
+                    dataList.appendChild(listItem)
+                })
+            }
+        }
+
+        // Carga los datos cuando se carga la página
+        loadData()
     </script>
 
 </body>
