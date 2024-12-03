@@ -24,47 +24,49 @@
     </table>
 
     <script>
-        // Crear la base de datos SQLite en memoria
-        const db = new SQL.Database();
+        // Espera a que el script de sql.js se haya cargado correctamente
+        window.onload = function() {
+            // Crear la base de datos SQLite en memoria
+            const db = new window.SQL.Database();
 
-        // Crear una tabla 'users' si no existe
-        db.run("CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY, name TEXT, age INTEGER);");
+            // Crear una tabla 'users' si no existe
+            db.run("CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY, name TEXT, age INTEGER);");
 
-        // Insertar algunos datos en la tabla
-        function insertarDatos() {
-            const stmt = db.prepare("INSERT INTO users (name, age) VALUES (?, ?)");
-            stmt.run(["John Doe", 30]);
-            stmt.run(["Jane Smith", 25]);
-            stmt.run(["Michael Johnson", 35]);
-            stmt.free();  // Liberar la declaración después de la inserción
-        }
-
-        // Función para cargar los datos de la base de datos en la tabla HTML
-        function cargarDatos() {
-            // Insertar los datos solo una vez (evitar inserción repetida)
-            if (db.exec("SELECT COUNT(*) FROM users")[0].values[0][0] === 0) {
-                insertarDatos();  // Insertar datos si la tabla está vacía
+            // Insertar algunos datos en la tabla
+            function insertarDatos() {
+                const stmt = db.prepare("INSERT INTO users (name, age) VALUES (?, ?)");
+                stmt.run(["John Doe", 30]);
+                stmt.run(["Jane Smith", 25]);
+                stmt.run(["Michael Johnson", 35]);
+                stmt.free();  // Liberar la declaración después de la inserción
             }
 
-            // Consultar todos los usuarios
-            const result = db.exec("SELECT * FROM users");
+            // Función para cargar los datos de la base de datos en la tabla HTML
+            function cargarDatos() {
+                // Insertar los datos solo una vez (evitar inserción repetida)
+                if (db.exec("SELECT COUNT(*) FROM users")[0].values[0][0] === 0) {
+                    insertarDatos();  // Insertar datos si la tabla está vacía
+                }
 
-            // Obtener el cuerpo de la tabla
-            const tbody = document.getElementById("tabla-datos").getElementsByTagName("tbody")[0];
-            tbody.innerHTML = "";  // Limpiar la tabla antes de cargar los datos
+                // Consultar todos los usuarios
+                const result = db.exec("SELECT * FROM users");
 
-            // Iterar sobre los resultados y agregar filas a la tabla
-            result[0].values.forEach(row => {
-                const tr = document.createElement("tr");
-                tr.innerHTML = `
-                    <td>${row[0]}</td>
-                    <td>${row[1]}</td>
-                    <td>${row[2]}</td>
-                `;
-                tbody.appendChild(tr);
-            });
-        }
+                // Obtener el cuerpo de la tabla
+                const tbody = document.getElementById("tabla-datos").getElementsByTagName("tbody")[0];
+                tbody.innerHTML = "";  // Limpiar la tabla antes de cargar los datos
 
+                // Iterar sobre los resultados y agregar filas a la tabla
+                result[0].values.forEach(row => {
+                    const tr = document.createElement("tr");
+                    tr.innerHTML = `
+                        <td>${row[0]}</td>
+                        <td>${row[1]}</td>
+                        <td>${row[2]}</td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+            }
+        };
     </script>
 
 </body>
