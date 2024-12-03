@@ -3,24 +3,26 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Importar Datos con Express.js</title>
+    <title>Importar Nombres desde JSON</title>
 </head>
 <body>
-    <h1>Datos del Usuario</h1>
-    <div id="datos"></div>
+    <h1>Lista de Nombres</h1>
+    <ul id="lista-nombres"></ul>
+
     <script>
-        // Hacer una solicitud a la API Express
-        fetch('/api/datos')
+        // Hacer una solicitud a la API Express para obtener los datos del archivo JSON
+        fetch('/api/nombres')
             .then(response => response.json())
             .then(data => {
-                // Mostrar los datos en el HTML
-                document.getElementById('datos').innerHTML = `
-                    <p>Nombre: ${data.nombre}</p>
-                    <p>Edad: ${data.edad}</p>
-                    <p>Profesión: ${data.profesion}</p>
-                `;
+                const lista = document.getElementById('lista-nombres');
+                // Iterar sobre los datos y mostrar los nombres en la lista
+                data.forEach(persona => {
+                    const li = document.createElement('li');
+                    li.textContent = persona.nombre;
+                    lista.appendChild(li);
+                });
             })
-            .catch(error => console.error('Error:', error));
+            .catch(error => console.error('Error al obtener los datos:', error));
     </script>
 </body>
 </html>
