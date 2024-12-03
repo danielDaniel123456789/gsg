@@ -4,7 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SQLite con JavaScript</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.8.0/sql.js"></script>
+    <!-- Asegúrate de que el script se carga completamente antes de usarlo -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.8.0/sql.js" onload="initDatabase()"></script>
 </head>
 <body>
 
@@ -27,8 +28,8 @@
         // Declarar una variable global para la base de datos
         let db;
 
-        // Esperar a que el script de sql.js se haya cargado correctamente
-        window.onload = function() {
+        // Esta función se ejecutará cuando el script de sql.js haya sido cargado
+        function initDatabase() {
             // Crear la base de datos SQLite en memoria
             db = new window.SQL.Database();
 
@@ -45,7 +46,7 @@
             }
 
             // Función para cargar los datos de la base de datos en la tabla HTML
-            function cargarDatos() {
+            window.cargarDatos = function() {
                 // Insertar los datos solo una vez (evitar inserción repetida)
                 if (db.exec("SELECT COUNT(*) FROM users")[0].values[0][0] === 0) {
                     insertarDatos();  // Insertar datos si la tabla está vacía
@@ -68,11 +69,8 @@
                     `;
                     tbody.appendChild(tr);
                 });
-            }
-
-            // Asignar la función cargarDatos a la variable global para que esté accesible
-            window.cargarDatos = cargarDatos;
-        };
+            };
+        }
     </script>
 
 </body>
