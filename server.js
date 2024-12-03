@@ -1,25 +1,23 @@
 const express = require('express');
-const path = require('path');
 const fs = require('fs');
+const path = require('path');
 const app = express();
 const port = 3000;
 
-// Servir los archivos estáticos (HTML, JS, CSS) desde la carpeta 'public'
-app.use(express.static(path.join(__dirname, 'public')));
+// Ruta para cargar los datos del archivo JSON
+app.get('/nombres', (req, res) => {
+  // Lee el archivo datos.json
+  fs.readFile(path.join(__dirname, 'datos.json'), 'utf8', (err, data) => {
+    if (err) {
+      return res.status(500).send('Error al cargar los datos.');
+    }
 
-// Endpoint para obtener los datos desde el archivo JSON
-app.get('/api/nombres', (req, res) => {
-    // Leemos el archivo 'datos.json'
-    fs.readFile(path.join(__dirname, 'datos.json'), 'utf8', (err, data) => {
-        if (err) {
-            res.status(500).send('Error al leer los datos');
-            return;
-        }
-        res.json(JSON.parse(data)); // Enviar los datos del archivo JSON como respuesta
-    });
+    // Envía los datos JSON al cliente
+    res.json(JSON.parse(data));
+  });
 });
 
-// Iniciar el servidor
+// Inicia el servidor
 app.listen(port, () => {
-    console.log(`Servidor corriendo en http://localhost:${port}`);
+  console.log(`Servidor escuchando en http://localhost:${port}`);
 });

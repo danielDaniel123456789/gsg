@@ -1,4 +1,6 @@
-{
-    "nombres": []
-  }
+[
+    { "nombre": "Juan" },
+    { "nombre": "Ana" },
+    { "nombre": "Carlos" }
+  ]
   

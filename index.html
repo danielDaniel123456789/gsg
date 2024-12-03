@@ -3,30 +3,30 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Formulario de Nombres</title>
+  <title>Mostrar Nombres</title>
 </head>
 <body>
-  <h1>Agregar Nombre</h1>
-  <form action="/agregar" method="POST">
-    <input type="text" name="nombre" placeholder="Ingrese un nombre" required>
-    <button type="submit">Agregar</button>
-  </form>
-
-  <h2>Lista de Nombres:</h2>
-  <ul>
+  <h1>Lista de Nombres</h1>
+  <ul id="nombres-lista">
     <!-- Aquí se mostrarán los nombres -->
-    <script>
-      fetch('/datos.json')
-        .then(response => response.json())
-        .then(data => {
-          const ul = document.querySelector('ul');
-          data.nombres.forEach(nombre => {
-            const li = document.createElement('li');
-            li.textContent = nombre;
-            ul.appendChild(li);
-          });
-        });
-    </script>
   </ul>
+
+  <script>
+    // Función para obtener los datos del servidor
+    fetch('https://github.com/danielDaniel123456789/gsg/nombres')
+      .then(response => response.json())
+      .then(data => {
+        const lista = document.getElementById('nombres-lista');
+        // Itera sobre los datos y crea un elemento de lista para cada nombre
+        data.forEach(item => {
+          const li = document.createElement('li');
+          li.textContent = item.nombre;
+          lista.appendChild(li);
+        });
+      })
+      .catch(error => {
+        console.error('Error al cargar los nombres:', error);
+      });
+  </script>
 </body>
 </html>
