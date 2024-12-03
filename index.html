@@ -14,10 +14,16 @@
   <script>
     let db;
 
-    // Inicializa SQLite en memoria
+    // Inicializa SQLite con un archivo precargado
     window.onload = async () => {
       const SQL = await initSqlJs();
-      db = new SQL.Database();
+
+      // Cargar el archivo de base de datos desde GitHub Pages
+      const response = await fetch("database.sqlite"); // Asegúrate de subir este archivo a tu repositorio
+      const buffer = await response.arrayBuffer();
+      db = new SQL.Database(new Uint8Array(buffer)); // Cargar el contenido en memoria
+
+      document.getElementById("output").innerText = "Base de datos cargada.";
     };
 
     function createTable() {
