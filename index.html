@@ -1,42 +1,66 @@
-<section id="contact">
-    <h2>Enviar una Nota</h2>
-    <form id="email-form">
-      <div>
-        <label for="note">Nota:</label>
-        <textarea id="note" name="note" rows="5" required></textarea>
-      </div>
-      <button type="submit">Enviar Nota</button>
-    </form>
-    <p id="status"></p>
-  </section>
-  <script src="https://cdn.emailjs.com/dist/email.min.js"></script>
+<style>
+  .field {
+  margin-bottom: 10px;
+}
+
+.field label {
+  display: block;
+  font-size: 12px;
+  color: #777;
+}
+
+.field input {
+  display: block;
+  min-width: 250px;
+  line-height: 1.5;
+  font-size: 14px;
+}
+
+input[type="submit"] {
+  display: block;
+  padding: 6px 30px;
+  font-size: 14px;
+  background-color: #4460AA;
+  color: #fff;
+  border: none
+}
+</style>
+
+<form id="form">
+  <div class="field">
+    <label for="message">message</label>
+    <input type="text" name="message" id="message">
+  </div>
+
+  <input type="submit" id="button" value="Send Email" >
+</form>
+
 <script>
-  // Inicializar EmailJS
-  emailjs.init("TU_USER_ID"); // Reemplaza con tu User ID de EmailJS
+  const btn = document.getElementById('button');
 
-  const form = document.getElementById('email-form');
-  form.addEventListener('submit', function (event) {
-    event.preventDefault();
+document.getElementById('form')
+ .addEventListener('submit', function(event) {
+   event.preventDefault();
 
-    const note = document.getElementById('note').value;
+   btn.value = 'Sending...';
 
-    // Configurar los parámetros del correo
-    const templateParams = {
-      message: note,
-    };
+   const serviceID = 'default_service';
+   const templateID = 'template_8lbqhqh';
 
-    // Enviar el correo
-    emailjs
-      .send('TU_SERVICE_ID', 'TU_TEMPLATE_ID', templateParams)
-      .then(
-        function () {
-          document.getElementById('status').textContent = '¡Nota enviada exitosamente!';
-          form.reset();
-        },
-        function (error) {
-          document.getElementById('status').textContent = 'Hubo un error al enviar la nota. Intenta de nuevo.';
-          console.error('Error:', error);
-        }
-      );
-  });
+   emailjs.sendForm(serviceID, templateID, this)
+    .then(() => {
+      btn.value = 'Send Email';
+      alert('Sent!');
+    }, (err) => {
+      btn.value = 'Send Email';
+      alert(JSON.stringify(err));
+    });
+});
+</script>
+
+<script type="text/javascript"
+  src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+
+<script type="text/javascript">
+  emailjs.init('_l4EbnoapfSxp62zS')
 </script>
