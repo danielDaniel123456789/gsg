@@ -1,85 +1,39 @@
 <!DOCTYPE html>
-<html lang="es">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Formulario de Inserción y Lectura de Datos</title>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+  <title>SQLite en el navegador</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.8.0/sql-wasm.js"></script>
 </head>
 <body>
+  <h1>SQLite en el navegador</h1>
+  <button onclick="createTable()">Crear Tabla</button>
+  <button onclick="insertData()">Insertar Datos</button>
+  <button onclick="selectData()">Cargar Datos</button>
+  <div id="output"></div>
 
-    <h1>Formulario de Inserción de Datos</h1>
+  <script>
+    let db;
 
-    <form id="insertForm">
-        <label for="name">Nombre:</label>
-        <input type="text" id="name" required>
-        <br>
+    // Inicializa SQLite en memoria
+    window.onload = async () => {
+      const SQL = await initSqlJs();
+      db = new SQL.Database();
+    };
 
-        <label for="email">Correo Electrónico:</label>
-        <input type="email" id="email" required>
-        <br>
+    function createTable() {
+      db.run("CREATE TABLE ejemplo (id INTEGER, nombre TEXT);");
+      document.getElementById("output").innerText = "Tabla creada.";
+    }
 
-        <button type="submit">Insertar Datos</button>
-    </form>
+    function insertData() {
+      db.run("INSERT INTO ejemplo (id, nombre) VALUES (1, 'Daniel');");
+      document.getElementById("output").innerText = "Dato insertado.";
+    }
 
-    <h2>Datos Insertados:</h2>
-    <ul id="dataList">
-        <!-- Los datos insertados se mostrarán aquí -->
-    </ul>
-
-    <script>
-        // Inicializa el cliente de Supabase
-        const supabaseUrl = 'https://hqohprqlximcjqewgqmd.supabase.co'
-        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imhxb2hwcnFseGltY2pxZXdncW1kIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzMxOTk2MzUsImV4cCI6MjA0ODc3NTYzNX0.mi4Gv5j9NqItBqFUKmVVkhDCaNIp8baOJUwMrHozCdE' // Reemplaza con tu clave
-        const supabase = supabase.createClient(supabaseUrl, supabaseKey)
-
-        // Maneja la inserción de datos
-        const insertForm = document.getElementById('insertForm')
-        insertForm.addEventListener('submit', async (e) => {
-            e.preventDefault() // Evita el comportamiento por defecto del formulario
-
-            const name = document.getElementById('name').value
-            const email = document.getElementById('email').value
-
-            // Inserta los datos en la tabla (reemplaza "your_table" con el nombre de tu tabla)
-            const { data, error } = await supabase
-                .from('your_table')  // Reemplaza 'your_table' con el nombre de tu tabla
-                .insert([
-                    { name: name, email: email }
-                ])
-
-            if (error) {
-                console.error('Error al insertar:', error)
-            } else {
-                console.log('Datos insertados:', data)
-                alert('¡Datos insertados correctamente!')
-                // Vuelve a cargar los datos después de la inserción
-                loadData()
-            }
-        })
-
-        // Función para cargar los datos desde la base de datos
-        async function loadData() {
-            const { data, error } = await supabase
-                .from('your_table')  // Asegúrate de que el nombre de la tabla sea correcto
-                .select('*')
-
-            if (error) {
-                console.error('Error al cargar los datos:', error)
-            } else {
-                const dataList = document.getElementById('dataList')
-                dataList.innerHTML = ''  // Limpia la lista antes de mostrar los datos
-                data.forEach(item => {
-                    const listItem = document.createElement('li')
-                    listItem.textContent = `Nombre: ${item.name}, Correo: ${item.email}`
-                    dataList.appendChild(listItem)
-                })
-            }
-        }
-
-        // Carga los datos cuando se carga la página
-        loadData()
-    </script>
-
+    function selectData() {
+      const res = db.exec("SELECT * FROM ejemplo;");
+      document.getElementById("output").innerText = JSON.stringify(res);
+    }
+  </script>
 </body>
 </html>
