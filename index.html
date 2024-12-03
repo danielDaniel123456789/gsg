@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SQLite con JavaScript</title>
-    <!-- Asegúrate de que el script se carga completamente antes de usarlo -->
+    <!-- Usando el evento onload para asegurarse que el script se cargue antes de usarlo -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.8.0/sql.js" onload="initDatabase()"></script>
 </head>
 <body>
@@ -30,46 +30,50 @@
 
         // Esta función se ejecutará cuando el script de sql.js haya sido cargado
         function initDatabase() {
-            // Crear la base de datos SQLite en memoria
-            db = new window.SQL.Database();
+            // Comprobamos si SQL.js está disponible
+            if (typeof window.SQL !== "undefined") {
+                db = new window.SQL.Database();  // Crear la base de datos SQLite en memoria
 
-            // Crear una tabla 'users' si no existe
-            db.run("CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY, name TEXT, age INTEGER);");
+                // Crear la tabla 'users' si no existe
+                db.run("CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY, name TEXT, age INTEGER);");
 
-            // Insertar algunos datos en la tabla
-            function insertarDatos() {
-                const stmt = db.prepare("INSERT INTO users (name, age) VALUES (?, ?)");
-                stmt.run(["John Doe", 30]);
-                stmt.run(["Jane Smith", 25]);
-                stmt.run(["Michael Johnson", 35]);
-                stmt.free();  // Liberar la declaración después de la inserción
-            }
-
-            // Función para cargar los datos de la base de datos en la tabla HTML
-            window.cargarDatos = function() {
-                // Insertar los datos solo una vez (evitar inserción repetida)
-                if (db.exec("SELECT COUNT(*) FROM users")[0].values[0][0] === 0) {
-                    insertarDatos();  // Insertar datos si la tabla está vacía
+                // Insertar algunos datos en la tabla
+                function insertarDatos() {
+                    const stmt = db.prepare("INSERT INTO users (name, age) VALUES (?, ?)");
+                    stmt.run(["John Doe", 30]);
+                    stmt.run(["Jane Smith", 25]);
+                    stmt.run(["Michael Johnson", 35]);
+                    stmt.free();  // Liberar la declaración después de la inserción
                 }
 
-                // Consultar todos los usuarios
-                const result = db.exec("SELECT * FROM users");
+                // Función para cargar los datos de la base de datos en la tabla HTML
+                window.cargarDatos = function() {
+                    // Insertar los datos solo una vez (evitar inserción repetida)
+                    if (db.exec("SELECT COUNT(*) FROM users")[0].values[0][0] === 0) {
+                        insertarDatos();  // Insertar datos si la tabla está vacía
+                    }
 
-                // Obtener el cuerpo de la tabla
-                const tbody = document.getElementById("tabla-datos").getElementsByTagName("tbody")[0];
-                tbody.innerHTML = "";  // Limpiar la tabla antes de cargar los datos
+                    // Consultar todos los usuarios
+                    const result = db.exec("SELECT * FROM users");
 
-                // Iterar sobre los resultados y agregar filas a la tabla
-                result[0].values.forEach(row => {
-                    const tr = document.createElement("tr");
-                    tr.innerHTML = `
-                        <td>${row[0]}</td>
-                        <td>${row[1]}</td>
-                        <td>${row[2]}</td>
-                    `;
-                    tbody.appendChild(tr);
-                });
-            };
+                    // Obtener el cuerpo de la tabla
+                    const tbody = document.getElementById("tabla-datos").getElementsByTagName("tbody")[0];
+                    tbody.innerHTML = "";  // Limpiar la tabla antes de cargar los datos
+
+                    // Iterar sobre los resultados y agregar filas a la tabla
+                    result[0].values.forEach(row => {
+                        const tr = document.createElement("tr");
+                        tr.innerHTML = `
+                            <td>${row[0]}</td>
+                            <td>${row[1]}</td>
+                            <td>${row[2]}</td>
+                        `;
+                        tbody.appendChild(tr);
+                    });
+                };
+            } else {
+                console.error("SQL.js no se ha cargado correctamente");
+            }
         }
     </script>
 
