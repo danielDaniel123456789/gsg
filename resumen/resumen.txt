@@ -3,3 +3,22 @@ Supabase:
 Descripción: Una alternativa de código abierto a Firebase que utiliza PostgreSQL como base de datos. Ofrece funcionalidades similares a Firebase, como autenticación, almacenamiento de archivos, bases de datos en tiempo real, y API RESTful.
 Ventajas: Gratuito en su nivel básico, fácil de usar, completamente de código abierto, y tiene una gran comunidad de soporte.
 Sitio web: supabase.io
+
+
+https://jsonbin.io/
+JSONBin es un servicio muy similar a MyJSON, que ofrece almacenamiento en la nube para datos JSON, permitiendo que múltiples usuarios interactúen con esos datos mediante una API REST.
+
+Ventajas de JSONBin:
+Gratis para empezar:
+Permite manejar hasta 50 bins (contenedores JSON) en el plan gratuito.
+Hasta 100 solicitudes por minuto.
+Datos persistentes:
+Los datos no se pierden al cerrar la aplicación o refrescar la página.
+API REST fácil de usar:
+Puedes crear, leer, actualizar y eliminar datos JSON mediante solicitudes HTTP.
+CORS habilitado:
+Ideal para interactuar desde el navegador o desde aplicaciones estáticas como las alojadas en GitHub Pages.
+
+La equivalencia total de almacenamiento en JSONBin con 50 bins en el plan gratuito depende del límite individual de cada bin, que es de 200 KB. Para calcular el total:
+
+50 bins × 200 KB = 10,000 KB = 10 MB.
