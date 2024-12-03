@@ -9,6 +9,12 @@
     <h1>Lista de Nombres</h1>
     <ul id="lista-nombres"></ul>
 
+    <h2>Agregar un Nombre</h2>
+    <form id="form-agregar-nombre">
+        <input type="text" id="input-nombre" placeholder="Escribe un nombre" required>
+        <button type="submit">Agregar</button>
+    </form>
+
     <script>
         // URL del archivo JSON
         const url = 'nombres.json';
@@ -19,12 +25,34 @@
             .then(data => {
                 const lista = document.getElementById('lista-nombres');
                 data.nombres.forEach(nombre => {
-                    const li = document.createElement('li');
-                    li.textContent = nombre;
-                    lista.appendChild(li);
+                    agregarNombreALaLista(nombre);
                 });
             })
             .catch(error => console.error('Error al cargar el JSON:', error));
+
+        // Referencias al formulario y su input
+        const form = document.getElementById('form-agregar-nombre');
+        const inputNombre = document.getElementById('input-nombre');
+
+        // Función para agregar nombres a la lista
+        const agregarNombreALaLista = (nombre) => {
+            const lista = document.getElementById('lista-nombres');
+            const li = document.createElement('li');
+            li.textContent = nombre;
+            lista.appendChild(li);
+        };
+
+        // Manejar el evento de envío del formulario
+        form.addEventListener('submit', (event) => {
+            event.preventDefault(); // Prevenir el envío por defecto
+            const nuevoNombre = inputNombre.value.trim();
+
+            if (nuevoNombre) {
+                agregarNombreALaLista(nuevoNombre);
+                inputNombre.value = ''; // Limpiar el campo de texto
+                inputNombre.focus(); // Volver a enfocar el input
+            }
+        });
     </script>
 </body>
 </html>
