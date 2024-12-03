@@ -1,28 +1,26 @@
-<form id="form-agregar-nombre">
-  <input type="text" id="input-nombre" placeholder="Escribe un nombre" required>
-  <button type="submit">Agregar</button>
-</form>
-
-<script>
-  const form = document.getElementById('form-agregar-nombre');
-  const inputNombre = document.getElementById('input-nombre');
-
-  form.addEventListener('submit', (event) => {
-      event.preventDefault();
-
-      const nuevoNombre = inputNombre.value.trim();
-      if (nuevoNombre) {
-          fetch('http://localhost:3000/nombres', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ nombre: nuevoNombre })
-          })
-          .then(response => response.json())
-          .then(data => {
-              alert(data.mensaje);
-              inputNombre.value = '';
-          })
-          .catch(error => console.error('Error al agregar el nombre:', error));
-      }
-  });
-</script>
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Importar Datos con Express.js</title>
+</head>
+<body>
+    <h1>Datos del Usuario</h1>
+    <div id="datos"></div>
+    <script>
+        // Hacer una solicitud a la API Express
+        fetch('/api/datos')
+            .then(response => response.json())
+            .then(data => {
+                // Mostrar los datos en el HTML
+                document.getElementById('datos').innerHTML = `
+                    <p>Nombre: ${data.nombre}</p>
+                    <p>Edad: ${data.edad}</p>
+                    <p>Profesión: ${data.profesion}</p>
+                `;
+            })
+            .catch(error => console.error('Error:', error));
+    </script>
+</body>
+</html>
