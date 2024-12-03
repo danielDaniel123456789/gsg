@@ -24,10 +24,13 @@
     </table>
 
     <script>
-        // Espera a que el script de sql.js se haya cargado correctamente
+        // Declarar una variable global para la base de datos
+        let db;
+
+        // Esperar a que el script de sql.js se haya cargado correctamente
         window.onload = function() {
             // Crear la base de datos SQLite en memoria
-            const db = new window.SQL.Database();
+            db = new window.SQL.Database();
 
             // Crear una tabla 'users' si no existe
             db.run("CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY, name TEXT, age INTEGER);");
@@ -66,6 +69,9 @@
                     tbody.appendChild(tr);
                 });
             }
+
+            // Asignar la función cargarDatos a la variable global para que esté accesible
+            window.cargarDatos = cargarDatos;
         };
     </script>
 
