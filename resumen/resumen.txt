@@ -1,0 +1,5 @@
+Supabase:
+
+Descripción: Una alternativa de código abierto a Firebase que utiliza PostgreSQL como base de datos. Ofrece funcionalidades similares a Firebase, como autenticación, almacenamiento de archivos, bases de datos en tiempo real, y API RESTful.
+Ventajas: Gratuito en su nivel básico, fácil de usar, completamente de código abierto, y tiene una gran comunidad de soporte.
+Sitio web: supabase.io
