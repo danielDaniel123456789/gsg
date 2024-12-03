@@ -1,5 +1,4 @@
-[
-    { "id": 1, "nombre": "Daniel" },
-    { "id": 2, "nombre": "Juan" },
-    { "id": 3, "nombre": "María" }
-]
+{
+    "nombres": []
+  }
+  

@@ -1,28 +1,32 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Importar Nombres desde JSON</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Formulario de Nombres</title>
 </head>
 <body>
-    <h1>Lista de Nombres</h1>
-    <ul id="lista-nombres"></ul>
+  <h1>Agregar Nombre</h1>
+  <form action="/agregar" method="POST">
+    <input type="text" name="nombre" placeholder="Ingrese un nombre" required>
+    <button type="submit">Agregar</button>
+  </form>
 
+  <h2>Lista de Nombres:</h2>
+  <ul>
+    <!-- Aquí se mostrarán los nombres -->
     <script>
-        // Hacer una solicitud a la API Express para obtener los datos del archivo JSON
-        fetch('/api/nombres')
-            .then(response => response.json())
-            .then(data => {
-                const lista = document.getElementById('lista-nombres');
-                // Iterar sobre los datos y mostrar los nombres en la lista
-                data.forEach(persona => {
-                    const li = document.createElement('li');
-                    li.textContent = persona.nombre;
-                    lista.appendChild(li);
-                });
-            })
-            .catch(error => console.error('Error al obtener los datos:', error));
+      fetch('/datos.json')
+        .then(response => response.json())
+        .then(data => {
+          const ul = document.querySelector('ul');
+          data.nombres.forEach(nombre => {
+            const li = document.createElement('li');
+            li.textContent = nombre;
+            ul.appendChild(li);
+          });
+        });
     </script>
+  </ul>
 </body>
 </html>
