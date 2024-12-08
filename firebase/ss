@@ -1,0 +1,6 @@
+<select class="form-select" aria-label="Default select example">
+  <option selected>Open this select menu</option>
+  <option value="1">Dia</option>
+  <option value="2">MEdio dia</option>
+  <option value="3">NOche</option>
+</select>
