@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Leer colección de Firestore</title>
+  <!-- Importar Firebase SDK en versión modular -->
+  
+  <button onclick="obtenerValorHoras()">Obtener Valor Horas</button>
+  
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js";
+    import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-firestore.js";
+    import { getAnalytics } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-analytics.js";
+
+    // Configuración de Firebase
+    const firebaseConfig = {
+      apiKey: "AIzaSyCFD4r3002vUWFNwhsu-XA4H_s65n-zo6I",
+      authDomain: "dbgsg-8b40d.firebaseapp.com",
+      projectId: "dbgsg-8b40d",
+      storageBucket: "dbgsg-8b40d.firebasestorage.app",
+      messagingSenderId: "769712986800",
+      appId: "1:769712986800:web:c100a6fcc6d2f704f6f975",
+      measurementId: "G-TBQH07LB1E"
+    };
+
+    // Inicializar Firebase
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const analytics = getAnalytics(app);
+
+    // Función para obtener los datos de la colección 'valorHoras' y mostrar un alert
+    async function obtenerValorHoras() {
+      try {
+        const querySnapshot = await getDocs(collection(db, "valorHoras"));
+        let valorHorasText = ''; // Variable para almacenar los datos como texto
+
+        querySnapshot.forEach((doc) => {
+          valorHorasText += `${doc.id}: ${JSON.stringify(doc.data())}\n`; // Concatenar datos
+        });
+
+        // Mostrar los datos en un alert
+        alert(valorHorasText || "No hay datos disponibles.");
+
+      } catch (error) {
+        console.error("Error al obtener documentos: ", error);
+        alert("Hubo un error al obtener los datos.");
+      }
+    }
+
+    // Hacer la función disponible globalmente
+    window.obtenerValorHoras = obtenerValorHoras;
+  </script>
+</head>
+<body>
+  <h1>Datos de la colección valorHoras</h1>
+</body>
+</html>
