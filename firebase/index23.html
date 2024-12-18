@@ -526,6 +526,9 @@ async function addHoursToUser(userId, hours, period, startTime) {
 
 
 function descargar() {
+  document.getElementById("misUsuarios").style.display = "none"; 
+  document.getElementById("usuariosTable").style.display = "block"; 
+
   getDocs(collection(db, "usuarios"))
     .then((querySnapshot) => {
       let usuariosData = "";
@@ -637,6 +640,11 @@ function descargar() {
       cerrarInforme.className = "btn btn-primary mt-3";
       document.getElementById("usuariosTable").appendChild(cerrarInforme);
 
+      cerrarInforme.addEventListener("click", () => {
+        cerrarModal();
+      });
+
+
       // Evento para copiar el resumen al portapapeles
       copyButton.addEventListener("click", () => {
         const resumen = generateSummary(querySnapshot); // Generar el resumen
@@ -653,6 +661,13 @@ function descargar() {
     });
 }
 
+function cerrarModal(){
+
+  document.getElementById("misUsuarios").style.display = "block"; 
+  document.getElementById("usuariosTable").style.display = "none"; 
+  
+   
+}
 // Función para generar el resumen del contenido cargado
 function generateSummary(querySnapshot) {
   let summary = "Resumen de Horas:\n\n";
@@ -723,7 +738,7 @@ window.deleteUser = deleteUser;
 
 
 <body class="container">
-
+  <h1 class="text-center mb-4">Horas Extras</h1>
     <!-- Contenedor para hacer la tabla responsive -->
  
     <div class="container">
@@ -741,10 +756,10 @@ window.deleteUser = deleteUser;
 
 
   <div class="container mt-5">
-    <h1 class="text-center mb-4">Horas Extras</h1>
+
     <button class="btn btn-primary mb-3" onclick="showAddUserModal()">Nuevo Usuario</button>
     <button class="btn btn-primary mb-3" onclick="descargar()">Informe</button>
-    <div class="card">
+    <div class="card" id="misUsuarios">
       <div class="card-body">
         <h5 class="card-title">Lista de Usuarios</h5>
       <!-- Tabla con la nueva columna para eliminar -->
