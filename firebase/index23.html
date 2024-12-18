@@ -32,31 +32,32 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
-    async function addUser(name, password) {
-      try {
-        if (!name || !password) {
-          return Swal.fire("Error", "Por favor, completa todos los campos.", "error");
-        }
-
-        const docRef = await addDoc(collection(db, "usuarios"), {
-          name,
-          contraseya: password,
-          horas: []  // Inicializa el array de horas vacías
-        });
-
-        Swal.fire("Éxito", `Usuario agregado con ID: ${docRef.id}`, "success");
-        fetchUsers(); // Actualizar la tabla
-      } catch (e) {
-        console.error("Error al agregar documento: ", e);
-      }
+    async function addUser(name, password, cedula) {
+  try {
+    if (!name || !password || !cedula) {
+      return Swal.fire("Error", "Por favor, completa todos los campos.", "error");
     }
+
+    const docRef = await addDoc(collection(db, "usuarios"), {
+      name,
+      contraseya: password,
+      cedula,  // Se agrega el campo cédula
+      horas: []  // Inicializa el array de horas vacías
+    });
+
+    Swal.fire("Éxito", `Usuario agregado con ID: ${docRef.id}`, "success");
+    fetchUsers(); // Actualizar la tabla
+  } catch (e) {
+    console.error("Error al agregar documento: ", e);
+  }
+}
 
     
 async function fetchUsers() {
-  showLoading();  // Show loading indicator
+  showLoading();  // Mostrar indicador de carga
   try {
     const tableBody = document.getElementById("user-table-body");
-    tableBody.innerHTML = ""; // Clear table
+    tableBody.innerHTML = ""; // Limpiar la tabla
 
     const querySnapshot = await getDocs(collection(db, "usuarios"));
     querySnapshot.forEach((doc) => {
@@ -67,19 +68,19 @@ async function fetchUsers() {
                 `${h.horas} (${h.periodo}) - ${new Date(h.fecha).toLocaleString()} `
             )
             .join("<br>")
-        : "No hay horas registradas"; // Show each record with button
+        : "No hay horas registradas"; // Mostrar las horas registradas
 
       const row = document.createElement("tr");
       row.innerHTML = `
         <td>${doc.id}</td>
         <td>${doc.data().name}</td>
         <td>${doc.data().contraseya}</td>
+        <td>${doc.data().cedula}</td>  <!-- Mostrar el número de cédula -->
         <td>
            <button class="btn btn-primary" onclick="showEditHoursModal('${doc.id}', '${doc.data().name}')">Resumen</button>
-           </td>
+        </td>
         <td>
-        <button class="btn btn-warning" onclick="showHoursModal('${doc.id}', '${doc.data().name}')">Insertar horas</button>
-
+          <button class="btn btn-warning" onclick="showHoursModal('${doc.id}', '${doc.data().name}')">Insertar horas</button>
           <button class="btn btn-danger" onclick="deleteUser('${doc.id}')">Eliminar</button>
         </td>
       `;
@@ -90,7 +91,7 @@ async function fetchUsers() {
     console.error("Error al obtener documentos: ", e);
     Swal.fire("Error", "Hubo un problema al cargar los usuarios.", "error");
   } finally {
-    Swal.close();  // Close loading indicator
+    Swal.close();  // Cerrar indicador de carga
   }
 }
 
@@ -298,25 +299,31 @@ function updateTotals() {
 
 
 function getSummaryText() {
-    let summary = "Resumen de Horas:\n";
+    let summary = "Resumen de Horas:\n\n";
+    summary += "Fecha       Horas   Inicio    Fin       Subtotal           Período\n";
+    summary += "-------------------------------------------------------------------------------\n";
+
     const rows = document.querySelectorAll('#hours-table-body tr');
-    
+
     rows.forEach((row, index) => {
-        const hours = document.getElementById(`edit-hours-${index}`).value;
-        const period = document.getElementById(`edit-period-${index}`).value;
-        const date = document.getElementById(`edit-date-${index}`).value;
-        const time = document.getElementById(`edit-time-${index}`).value;
-        const finalTime = document.getElementById(`final-time-${index}`).textContent;
-        const subtotal = document.getElementById(`subtotal-${index}`).textContent;
-        
-        summary += `\nHoras: ${hours} | Período: ${period} | Fecha: ${date} | Hora Inicio: ${time} | Hora Final: ${finalTime} | Subtotal: ₡${subtotal}`;
+        const date = document.getElementById(`edit-date-${index}`).value.trim().padEnd(12, '\u00A0');  // Alinea a la izquierda
+        const hours = document.getElementById(`edit-hours-${index}`).value.trim().padEnd(8, '\u00A0');  // Alinea a la izquierda
+        const time = document.getElementById(`edit-time-${index}`).value.trim().padEnd(10, '\u00A0');  // Alinea a la izquierda
+        const finalTime = document.getElementById(`final-time-${index}`).textContent.trim().padEnd(10, '\u00A0');  // Alinea a la izquierda
+        const subtotal = `₡${document.getElementById(`subtotal-${index}`).textContent.trim()}`.padEnd(15, '\u00A0');  // Alinea a la izquierda
+        let period = document.getElementById(`edit-period-${index}`).value.trim();
+        period = period.replace(/\s*\(.*?\)/, "").padEnd(24, '\u00A0');  // Alinea a la izquierda
+
+        // Añadimos la fila al resumen con todo alineado a la izquierda
+        summary += `${date}${hours}${time}${finalTime}${subtotal} ${period}\n`;
     });
 
-    const totalHours = document.getElementById('total-hours').textContent;
-    const totalSubtotal = document.getElementById('total-subtotal').textContent;
-    
-    summary += `\n\nTotal Horas: ${totalHours} | Total Subtotal: ₡${totalSubtotal}`;
-    
+    const totalHours = document.getElementById('total-hours').textContent.trim().padEnd(5, '\u00A0');  // Alinea a la izquierda
+    const totalSubtotal = `₡${document.getElementById('total-subtotal').textContent.trim()}`.padEnd(15, '\u00A0');  // Alinea a la izquierda
+
+    summary += "\n-------------------------------------------------------------------------------\n";
+    summary += `Total Horas: ${totalHours}Total Subtotal: ${totalSubtotal}`;
+
     return summary;
 }
 
@@ -368,24 +375,29 @@ function showAddUserModal() {
         <label for="userPassword">Contraseña:</label>
         <input type="password" id="userPassword" class="form-control" placeholder="Ingresa la contraseña">
       </div>
+      <div class="form-group mt-3">
+        <label for="userCedula">Número de Cédula:</label>
+        <input type="text" id="userCedula" class="form-control" placeholder="Ingresa el número de cédula">
+      </div>
     `,
     confirmButtonText: "Agregar",
     showCancelButton: true,
     preConfirm: () => {
       const userName = document.getElementById("userName").value.trim();
       const userPassword = document.getElementById("userPassword").value.trim();
+      const userCedula = document.getElementById("userCedula").value.trim();
 
-      if (!userName || !userPassword) {
+      if (!userName || !userPassword || !userCedula) {
         Swal.showValidationMessage("Por favor, completa todos los campos");
         return false;
       }
 
-      return { name: userName, password: userPassword };
+      return { name: userName, password: userPassword, cedula: userCedula };
     },
   }).then((result) => {
     if (result.isConfirmed) {
-      const { name, password } = result.value;
-      addUser(name, password);
+      const { name, password, cedula } = result.value;
+      addUser(name, password, cedula);
     }
   });
 }
@@ -514,104 +526,189 @@ async function addHoursToUser(userId, hours, period, startTime) {
 
 
 function descargar() {
-    getDocs(collection(db, "usuarios"))
-      .then((querySnapshot) => {
-        let usuariosData = "";
+  getDocs(collection(db, "usuarios"))
+    .then((querySnapshot) => {
+      let usuariosData = "";
 
-        // Iterar sobre cada documento y extraer sus datos
-        querySnapshot.forEach((doc) => {
-          const usuario = doc.data(); // Obtenemos los datos del usuario
-          const nombre = usuario.name || "Sin nombre"; // Nombre del usuario
-          const horas = usuario.horas || []; // Datos de horas
+      // Iterar sobre cada documento y extraer sus datos
+      querySnapshot.forEach((doc) => {
+        const usuario = doc.data(); // Obtenemos los datos del usuario
+        const nombre = (usuario.name || "Sin nombre").toUpperCase(); // Nombre del usuario en mayúsculas
+        const cedula = (usuario.cedula || "Sin cédula").toUpperCase(); // Cédula en mayúsculas
+        const horas = usuario.horas || []; // Datos de horas
 
-          let totalHoras = 0;
-          let totalMonto = 0;
+        let totalHoras = 0;
+        let totalMonto = 0;
 
-          // Generar HTML para cada usuario
-          usuariosData += `
-          <div class="container p-2">
-            <h2>${nombre} </h2> 
-            <table class="table table-striped">
-              <thead>
-                <tr>
-                  <th>Horas</th>
-                  <th>Periodo</th>
-                  <th>Fecha</th>
-                  <th>Hora Inicio</th>
-                  <th>Hora Fin</th> <!-- Nueva columna de hora fin -->
-                  <th>Subtotal (Horas x Monto)</th>
-                </tr>
-              </thead>
-              <tbody>
-                ${horas
-                  .map((h) => {
-                    const fecha = h.fecha ? new Date(h.fecha).toISOString().split("T")[0] : "Sin fecha";
-                    const horaInicio = h.hora || "Sin hora";
-                    const periodo = h.periodo || "Sin periodo";
-                    const cantidadHoras = h.horas || 0;
-                    let monto = 0;
+        // Generar HTML para cada usuario
+        usuariosData += `
+        <div class="container p-2">
+          <h2>${nombre} - Cédula: ${cedula}</h2>  <!-- Mostrar nombre y cédula -->
+          <table class="table table-striped">
+            <thead>
+              <tr>
+                <th>Horas</th>
+                <th>Periodo</th>
+                <th>Fecha</th>
+                <th>Hora Inicio</th>
+                <th>Hora Fin</th> <!-- Nueva columna de hora fin -->
+                <th>Subtotal (Horas x Monto)</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${horas
+                .map((h) => {
+                  const fecha = h.fecha ? new Date(h.fecha).toISOString().split("T")[0] : "Sin fecha";
+                  const horaInicio = h.hora || "Sin hora";
+                  const periodo = h.periodo || "Sin periodo";
+                  const cantidadHoras = h.horas || 0;
+                  let monto = 0;
 
-                    // Extraer el monto del periodo
-                    const periodoParts = periodo.match(/₡([\d,\.]+)/);
-                    if (periodoParts && periodoParts[1]) {
-                      monto = parseFloat(periodoParts[1].replace(',', ''));
-                    }
+                  // Extraer el monto del periodo
+                  const periodoParts = periodo.match(/₡([\d,\.]+)/);
+                  if (periodoParts && periodoParts[1]) {
+                    monto = parseFloat(periodoParts[1].replace(',', ''));
+                  }
 
-                    // Calcular el subtotal (Horas x Monto)
-                    const subtotal = cantidadHoras * monto;
+                  // Calcular el subtotal (Horas x Monto)
+                  const subtotal = cantidadHoras * monto;
 
-                    // Calcular la hora fin sumando las horas a la hora de inicio
-                    let horaFin = "Sin hora fin";
-                    if (horaInicio !== "Sin hora") {
-                      const [hora, minutos] = horaInicio.split(":").map((e) => parseInt(e, 10));
-                      const inicioDate = new Date(2000, 1, 1, hora, minutos); // Creando una fecha ficticia para hacer cálculos
-                      inicioDate.setHours(inicioDate.getHours() + cantidadHoras); // Sumando las horas
-                      const finHora = inicioDate.getHours().toString().padStart(2, "0");
-                      const finMinutos = inicioDate.getMinutes().toString().padStart(2, "0");
-                      horaFin = `${finHora}:${finMinutos}`; // Hora de fin en formato HH:MM
-                    }
+                  // Calcular la hora fin sumando las horas a la hora de inicio
+                  let horaFin = "Sin hora fin";
+                  if (horaInicio !== "Sin hora") {
+                    const [hora, minutos] = horaInicio.split(":").map((e) => parseInt(e, 10));
+                    const inicioDate = new Date(2000, 1, 1, hora, minutos); // Creando una fecha ficticia para hacer cálculos
+                    inicioDate.setHours(inicioDate.getHours() + cantidadHoras); // Sumando las horas
+                    const finHora = inicioDate.getHours().toString().padStart(2, "0");
+                    const finMinutos = inicioDate.getMinutes().toString().padStart(2, "0");
+                    horaFin = `${finHora}:${finMinutos}`; // Hora de fin en formato HH:MM
+                  }
 
-                    // Sumar las horas y el monto
-                    totalHoras += cantidadHoras;
-                    totalMonto += subtotal;
+                  // Sumar las horas y el monto
+                  totalHoras += cantidadHoras;
+                  totalMonto += subtotal;
 
-                    return `
-                      <tr>
-                        <td>${cantidadHoras}</td>
-                        <td>${periodo}</td>
-                        <td>${fecha}</td>
-                        <td>${horaInicio}</td>
-                        <td>${horaFin}</td> <!-- Hora fin calculada -->
-                        <td>₡${subtotal.toFixed(2)}</td>
-                      </tr>
-                    `;
-                  })
-                  .join("")}
-              </tbody>
-          <tfoot>
-    <tr>
-        <th>Total Horas</th>
-        <th colspan="3" id="total-hours">0.00</th>
-        <th>Subtotal General</th>
-        <th id="total-subtotal">0.00</th>
-    </tr>
-</tfoot>
+                  return `
+                    <tr>
+                      <td>${cantidadHoras}</td>
+                      <td>${periodo}</td>
+                      <td>${fecha}</td>
+                      <td>${horaInicio}</td>
+                      <td>${horaFin}</td> <!-- Hora fin calculada -->
+                      <td>₡${subtotal.toFixed(2)}</td>
+                    </tr>
+                  `;
+                })
+                .join("")}
+            </tbody>
+        <tfoot>
+      <tr>
+          <th>Total Horas</th>
+          <th colspan="3" id="total-hours">${totalHoras.toFixed(2)}</th>
+          <th>Subtotal General</th>
+          <th id="total-subtotal">₡${totalMonto.toFixed(2)}</th>
+      </tr>
+  </tfoot>
 
-            </table>
-          </div>
-          `;
-        });
-
-        // Mostrar los datos en la tabla HTML
-        document.getElementById("usuariosTable").innerHTML = usuariosData;
-        document.getElementById("usuariosTable").style.display = "block";
-      })
-      .catch((error) => {
-        console.error("Error al cargar los usuarios:", error);
-        Swal.fire("Error", "No se pudieron cargar los datos de los usuarios", "error");
+          </table>
+        </div>
+        `;
       });
+
+      // Mostrar los datos en la tabla HTML
+      document.getElementById("usuariosTable").innerHTML = usuariosData;
+      document.getElementById("usuariosTable").style.display = "block";
+
+      // Agregar el botón para copiar el resumen
+      const copyButton = document.createElement("button");
+      copyButton.textContent = "Copiar Resumen";
+      copyButton.className = "btn btn-primary mt-3";
+      document.getElementById("usuariosTable").appendChild(copyButton);
+
+
+        // Agregar el botón para copiar el resumen
+        const enviarCorreo = document.createElement("button");
+        enviarCorreo.textContent = "Email";
+        enviarCorreo.className = "btn btn-primary mt-3";
+      document.getElementById("usuariosTable").appendChild(enviarCorreo);
+
+      const cerrarInforme = document.createElement("button");
+      cerrarInforme.textContent = "Cerrar ";
+      cerrarInforme.className = "btn btn-primary mt-3";
+      document.getElementById("usuariosTable").appendChild(cerrarInforme);
+
+      // Evento para copiar el resumen al portapapeles
+      copyButton.addEventListener("click", () => {
+        const resumen = generateSummary(querySnapshot); // Generar el resumen
+        navigator.clipboard.writeText(resumen).then(() => {
+          Swal.fire("¡Éxito!", "Resumen copiado al portapapeles", "success");
+        }).catch((error) => {
+          Swal.fire("Error", "No se pudo copiar el resumen", "error");
+        });
+      });
+    })
+    .catch((error) => {
+      console.error("Error al cargar los usuarios:", error);
+      Swal.fire("Error", "No se pudieron cargar los datos de los usuarios", "error");
+    });
 }
 
+// Función para generar el resumen del contenido cargado
+function generateSummary(querySnapshot) {
+  let summary = "Resumen de Horas:\n\n";
+  summary += "Nombre          Horas         Periodo           Fecha      Hora Inicio    Hora Fin      Subtotal\n";
+  summary += "-------------------------------------------------------------------------------\n";
+
+  querySnapshot.forEach((doc) => {
+    const usuario = doc.data();
+    const nombre = usuario.name || "Sin nombre";
+    const horas = usuario.horas || [];
+    
+    let totalSubt = 0;  // Acumulador para el total de subtotales del usuario
+
+    horas.forEach((h) => {
+      const fecha = h.fecha ? new Date(h.fecha).toISOString().split("T")[0] : "Sin fecha";
+      const horaInicio = h.hora || "Sin hora";
+      const cantidadHoras = h.horas || 0;
+      let periodo = h.periodo || "Sin periodo";
+      let monto = 0;
+
+      // Eliminar paréntesis y su contenido en el periodo
+      periodo = periodo.replace(/\s?\(.*\)\s?/g, "");
+
+      // Extraer el monto del periodo
+      const periodoParts = periodo.match(/₡([\d,\.]+)/);
+      if (periodoParts && periodoParts[1]) {
+        monto = parseFloat(periodoParts[1].replace(',', ''));
+      }
+
+      // Calcular el subtotal (Horas x Monto)
+      const subtotal = cantidadHoras * monto;
+      totalSubt += subtotal;  // Sumar al total
+
+      // Calcular la hora fin sumando las horas a la hora de inicio
+      let horaFin = "Sin hora fin";
+      if (horaInicio !== "Sin hora") {
+        const [hora, minutos] = horaInicio.split(":").map((e) => parseInt(e, 10));
+        const inicioDate = new Date(2000, 1, 1, hora, minutos); // Creando una fecha ficticia para hacer cálculos
+        inicioDate.setHours(inicioDate.getHours() + cantidadHoras); // Sumando las horas
+        const finHora = inicioDate.getHours().toString().padStart(2, "0");
+        const finMinutos = inicioDate.getMinutes().toString().padStart(2, "0");
+        horaFin = `${finHora}:${finMinutos}`; // Hora de fin en formato HH:MM
+      }
+
+      // Agregar los datos del usuario, incluyendo Hora Fin
+      summary += `${nombre.padEnd(20)} ${cantidadHoras.toString().padEnd(8)} ${periodo.padEnd(18)} ${fecha.padEnd(12)} ${horaInicio.padEnd(15)} ${horaFin.padEnd(15)} ${subtotal.toFixed(2).padStart(10)}\n`;
+    });
+
+    // Agregar la fila de total después de las horas del usuario
+    summary += `${"Total".padEnd(20)} ${"".padEnd(8)} ${"".padEnd(18)} ${"".padEnd(12)} ${"".padEnd(32)} ${totalSubt.toFixed(2).padStart(10)}\n`;
+    summary += "-------------------------------------------------------------------------------\n";
+    summary += "\n";  // Agregar una fila vacía para separar usuarios
+  });
+
+  return summary;
+}
 
 window.showPeriodDetails = showPeriodDetails;
 window.descargar = descargar;
