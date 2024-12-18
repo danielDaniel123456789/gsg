@@ -738,6 +738,10 @@ window.deleteUser = deleteUser;
 
 
 <body class="container">
+  <div class="d-flex p-2">
+    <button class="btn btn-primary mb-3" onclick="showAddUserModal()">Nuevo Usuario</button>
+    <button class="btn btn-primary mb-3" onclick="descargar()">Informe</button>
+  </div>
   <h1 class="text-center mb-4">Horas Extras</h1>
     <!-- Contenedor para hacer la tabla responsive -->
  
@@ -757,8 +761,7 @@ window.deleteUser = deleteUser;
 
   <div class="container mt-5">
 
-    <button class="btn btn-primary mb-3" onclick="showAddUserModal()">Nuevo Usuario</button>
-    <button class="btn btn-primary mb-3" onclick="descargar()">Informe</button>
+    
     <div class="card" id="misUsuarios">
       <div class="card-body">
         <h5 class="card-title">Lista de Usuarios</h5>
