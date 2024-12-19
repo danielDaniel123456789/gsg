@@ -6,6 +6,12 @@
   <title>Insertar y Listar Usuarios</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.4.0/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.17.2/firebase-app.js";
     import { 
@@ -634,6 +640,10 @@ function descargar() {
         enviarCorreo.textContent = "Email";
         enviarCorreo.className = "btn btn-primary mt-3";
       document.getElementById("usuariosTable").appendChild(enviarCorreo);
+      enviarCorreo.addEventListener("click", () => {
+    const resumen = generateSummary(querySnapshot); // Generar el resumen
+    enviarResumenPorCorreo(resumen);
+  });
 
       const cerrarInforme = document.createElement("button");
       cerrarInforme.textContent = "Cerrar ";
@@ -643,6 +653,26 @@ function descargar() {
       cerrarInforme.addEventListener("click", () => {
         cerrarModal();
       });
+
+      const pdf = document.createElement("button");
+      pdf.textContent = "PDF ";
+      pdf.className = "btn btn-primary mt-3";
+      document.getElementById("usuariosTable").appendChild(pdf);
+
+      pdf.addEventListener("click", () => {
+        descargarPDF();
+      });
+
+      const excel = document.createElement("button");
+      excel.textContent = "Excel ";
+      excel.className = "btn btn-primary mt-3";
+      document.getElementById("usuariosTable").appendChild(excel);
+
+      excel.addEventListener("click", () => {
+        descargarExel();
+      });
+
+
 
 
       // Evento para copiar el resumen al portapapeles
@@ -659,6 +689,88 @@ function descargar() {
       console.error("Error al cargar los usuarios:", error);
       Swal.fire("Error", "No se pudieron cargar los datos de los usuarios", "error");
     });
+}
+
+
+function descargarExel() {
+  // Obtener la tabla de usuarios
+  const table = document.querySelector("#usuariosTable table");
+
+  // Convertir la tabla HTML a una hoja de cálculo
+  const workbook = XLSX.utils.book_new(); // Crear un nuevo libro
+  const worksheet = XLSX.utils.table_to_sheet(table); // Convertir la tabla a hoja
+
+  // Agregar la hoja al libro
+  XLSX.utils.book_append_sheet(workbook, worksheet, "Usuarios");
+
+  // Generar el archivo Excel y descargarlo
+  XLSX.writeFile(workbook, "usuarios.xlsx");
+}
+
+
+// Función para generar y descargar el PDF
+function descargarPDF() {
+  const { jsPDF } = window.jspdf;
+
+  const doc = new jsPDF();
+  const usuariosTable = document.getElementById("usuariosTable");
+
+  // Usar html2canvas para capturar el contenido
+  html2canvas(usuariosTable).then((canvas) => {
+    const imgData = canvas.toDataURL("image/png"); // Convertir canvas a imagen
+    const imgWidth = 190; // Ajusta el ancho según el tamaño del PDF
+    const pageHeight = 285; // Altura de la página
+    const imgHeight = (canvas.height * imgWidth) / canvas.width; // Escalar la altura proporcionalmente
+    let position = 10; // Margen superior
+
+    doc.addImage(imgData, "PNG", 10, position, imgWidth, imgHeight); // Agregar imagen al PDF
+    doc.save("informe_usuarios.pdf"); // Descargar el PDF
+  }).catch((error) => {
+    console.error("Error al generar el PDF:", error);
+    Swal.fire("Error", "No se pudo generar el PDF", "error");
+  });
+}
+
+function enviarResumenPorCorreo(resumen) {
+  // Mostrar un modal para solicitar el correo
+  Swal.fire({
+    title: "Enviar correo",
+    input: "email", // Tipo de entrada: correo electrónico
+    inputLabel: "Escribe el correo electrónico al que deseas enviar el resumen",
+    inputPlaceholder: "ejemplo@correo.com",
+    confirmButtonText: "Enviar",
+    showCancelButton: true,
+    cancelButtonText: "Cancelar",
+    inputValidator: (value) => {
+      if (!value) {
+        return "Por favor ingresa un correo válido";
+      }
+      return null; // Validación exitosa
+    },
+  }).then((result) => {
+    if (result.isConfirmed) {
+      const email = result.value; // Correo proporcionado por el usuario
+
+      if (email) {
+        const serviceID = "default_service";
+        const templateID = "template_8lbqhqh";
+
+        // Enviar el correo
+        emailjs
+          .send(serviceID, templateID, {
+            message: resumen, // Pasar el resumen al template
+            to_email: email, // Variable para el destinatario (debe coincidir con el template)
+          })
+          .then(() => {
+            Swal.fire("¡Éxito!", "Correo enviado exitosamente", "success");
+          })
+          .catch((error) => {
+            console.error("Error al enviar el correo:", error);
+            Swal.fire("Error", "No se pudo enviar el correo", "error");
+          });
+      }
+    }
+  });
 }
 
 function cerrarModal(){
@@ -738,9 +850,12 @@ window.deleteUser = deleteUser;
 
 
 <body class="container">
+
+
   <div class="d-flex p-2">
     <button class="btn btn-primary mb-3" onclick="showAddUserModal()">Nuevo Usuario</button>
     <button class="btn btn-primary mb-3" onclick="descargar()">Informe</button>
+
   </div>
   <h1 class="text-center mb-4">Horas Extras</h1>
     <!-- Contenedor para hacer la tabla responsive -->
@@ -786,5 +901,12 @@ window.deleteUser = deleteUser;
   </div>
 </body>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+  <script type="text/javascript"
+  src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+
+<script type="text/javascript">
+  emailjs.init('_l4EbnoapfSxp62zS')
+</script>
 
 </html>
