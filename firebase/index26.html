@@ -10,7 +10,7 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.4.0/jspdf.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.17.2/firebase-app.js";
@@ -78,16 +78,14 @@ async function fetchUsers() {
 
       const row = document.createElement("tr");
       row.innerHTML = `
-        <td>${doc.id}</td>
+       
         <td>${doc.data().name}</td>
-        <td>${doc.data().contraseya}</td>
-        <td>${doc.data().cedula}</td>  <!-- Mostrar el número de cédula -->
+     
+      
         <td>
-           <button class="btn btn-primary" onclick="showEditHoursModal('${doc.id}', '${doc.data().name}')">Resumen</button>
-        </td>
-        <td>
-          <button class="btn btn-warning" onclick="showHoursModal('${doc.id}', '${doc.data().name}')">Insertar horas</button>
-          <button class="btn btn-danger" onclick="deleteUser('${doc.id}')">Eliminar</button>
+           <button class="btn btn-primary" onclick="showEditHoursModal('${doc.id}', '${doc.data().name}')"><i class="fa fa-building" aria-hidden="true"></i></button>
+          <button class="btn btn-warning" onclick="showHoursModal('${doc.id}', '${doc.data().name}')"><i class="fa fa-calculator" aria-hidden="true"></i></button>
+          <button hidden class="btn btn-danger" onclick="deleteUser('${doc.id}')">Eliminar</button>
         </td>
       `;
 
@@ -116,137 +114,212 @@ function showLoading() {
   });
 }
 
+
+function cerrarInformeGenereal(){
+  document.getElementById("misUsuarios").style.display = "block"; 
+  document.getElementById("cargarDetalles").style.display = "none"; 
+  
+  //document.getElementById("menu01").style.display = "block"; 
+}
+
+function mostrarDetalles(){
+  const menu01 = document.getElementById("menu01");
+  const misUsuarios = document.getElementById("misUsuarios");
+  const cargarDetalles = document.getElementById("cargarDetalles");
+
+  if (menu01) menu01.style.display = "none"; 
+  if (misUsuarios) misUsuarios.style.display = "none"; 
+  if (cargarDetalles) cargarDetalles.style.display = "block";
+}
+
+
 function showEditHoursModal(userId, name) {
-    if (isEditHoursModalOpen) return; // Evitar abrir múltiples veces el modal
-    isEditHoursModalOpen = true;
-
-    getDoc(doc(db, "usuarios", userId))
-        .then((userDoc) => {
+  // Paso 1: Solicitar la contraseña
+  Swal.fire({
+    title: "Ingrese su Contraseña",
+    input: "password",
+    inputPlaceholder: "Escriba su contraseña",
+    showCancelButton: true,
+    confirmButtonText: "Ingresar",
+    preConfirm: (password) => {
+      // Paso 2: Verificar la contraseña en Firebase usando la cédula
+      return new Promise((resolve, reject) => {
+        const userRef = doc(db, "usuarios", userId);
+        getDoc(userRef)
+          .then((userDoc) => {
             if (userDoc.exists()) {
-                const horas = userDoc.data().horas || [];
+              const userData = userDoc.data();
+              const storedPassword = userData.contraseya;
 
-                const periodRates = {
-                    "Normal ₡1400.31": 1400.31,
-                    "Diurnas ₡2241.31 (5:00am a las 19:00pm)": 2241.31,
-                    "Mixtas ₡2561.50 (19:00 a las 22:00)": 2561.5,
-                    "Nocturnas ₡2988.41 (22:00 a las 5:00am)": 2988.41,
-                };
+              // Comparar la contraseña ingresada con la almacenada
+              if (password.trim() === storedPassword.trim()) {
+                resolve();
+              } else {
+                reject("Contraseña incorrecta");
+                alert('incorrecta')
+              }
+            } else {
+              reject("Usuario no encontrado");
+              alert('incorrectssa')
+            }
+          })
+          .catch((error) => {
+            console.error("Error al verificar la contraseña:", error);
+            alert('incorrectss55a')
+            reject("Error al verificar la contraseña");
+          });
+      });
+    },
+  }).then(() => {
+ 
+    // Paso 3: Obtener y mostrar la información si la contraseña es correcta
+    getDoc(doc(db, "usuarios", userId))
+      .then((userDoc) => {
+        if (userDoc.exists()) {
+          const horas = userDoc.data().horas || [];
 
-                const horasOptions = `
-    <div class="table-responsive">
-        <table class="table table-bordered">
-            <thead>
-                <tr>
+          const periodRates = {
+            "Normal ₡1400.31": 1400.31,
+            "Diurnas ₡2241.31 (5:00am a las 19:00pm)": 2241.31,
+            "Mixtas ₡2561.50 (19:00 a las 22:00)": 2561.5,
+            "Nocturnas ₡2988.41 (22:00 a las 5:00am)": 2988.41,
+          };
+
+          let horasOptions = `
+            <div class="container">
+              <table class="table table-striped" style="width: 100%">
+                <thead>
+                  <tr>
                     <th>Horas</th>
                     <th>Modificar</th>
                     <th>Inserto</th>
                     <th>Fecha</th>
                     <th>Hora Inicio</th>
-                    <th>Horas Final</th>
+                    <th>Hora Final</th>
                     <th>Subtotal</th>
-                </tr>
-            </thead>
-            <tbody id="hours-table-body">
-                ${horas.map((h, index) => {
-                    const isEditable = index === horas.length - 1; // Solo la última fila es editable
-                    const date = new Date(h.fecha);
-                    const formattedDate = h.fecha ? date.toISOString().split('T')[0] : '';
-                    const formattedTime = h.hora || "00:00";
-                    const rate = periodRates[h.periodo] || 0;
-                    const subtotal = (h.horas || 0) * rate;
+                  </tr>
+                </thead>
+                <tbody id="hours-table-body">
+          `;
 
-                    return `
-                        <tr>
-                            <td>
-                                <input type="number" id="edit-hours-${index}" class="form-control" value="${h.horas || ''}" min="0" 
-                                    oninput="updateSubtotal(${index})" ${isEditable ? "" : "disabled"}>
-                            </td>
-                            <td>
-                                <select id="edit-period-${index}" class="form-control" onchange="updateSubtotal(${index})" ${isEditable ? "" : "disabled"}>
-                                    ${Object.keys(periodRates).map(period => 
-                                        `<option value="${period}" ${h.periodo === period ? "selected" : ""}>${period}</option>`
-                                    ).join('')}
-                                </select>
-                            </td>
-                            <td>
-                                <button type="button" class="btn btn-info">
-                                    ${h.periodo ? h.periodo.charAt(0) : 'N/A'}
-                                </button>
-                            </td>
-                            <td>
-                                <input type="date" id="edit-date-${index}" class="form-control" value="${formattedDate}">
-                            </td>
-                            <td>
-                                <input type="time" id="edit-time-${index}" class="form-control" value="${formattedTime}" onchange="updateFinalTime(${index})">
-                            </td>
-                            <td id="final-time-${index}" class="text-end">
-                                ${calculateFinalTime(formattedTime, h.horas || 0)}
-                            </td>
-                            <td id="subtotal-${index}" class="text-end">
-                                ${subtotal.toFixed(2)}
-                            </td>
-                        </tr>
-                    `;
-                }).join('')}
-            </tbody>
-            <tfoot>
-                <tr>
-                    <th id="total-hours">0</th>
-                    <th colspan="5" class="text-end">Total Subtotal</th>
-                    <th id="total-subtotal" class="text-end">0.00</th>
-                </tr>
-            </tfoot>
-        </table>
-    </div>
-    <button id="copy-summary" class="btn btn-secondary">Copiar Resumen</button>
-`;
+          let totalHoras = 0;
+          let totalSubtotal = 0;
 
-                Swal.fire({
-                    title: `Editar Horas ${name}`,
-                    html: horasOptions,
-                    confirmButtonText: "Guardar Cambios",
-                    showCancelButton: true,
-                    width: "100%",
-                    didRender: updateTotals,
-                    preConfirm: () => {
-                        const updatedHours = [];
-                        for (let index = 0; index < horas.length; index++) {
-                            const newHours = document.getElementById(`edit-hours-${index}`).value.trim();
-                            const newPeriod = document.getElementById(`edit-period-${index}`).value;
-                            const newDate = document.getElementById(`edit-date-${index}`).value.trim();
-                            const newTime = document.getElementById(`edit-time-${index}`).value.trim();
+          horas.forEach((h, index) => {
+            const isEditable = index === horas.length - 1; // Solo la última fila es editable
+            const date = new Date(h.fecha);
+            const formattedDate = h.fecha ? date.toISOString().split("T")[0] : "";
+            const formattedTime = h.hora || "00:00";
+            const rate = periodRates[h.periodo] || 0;
+            const subtotal = (h.horas || 0) * rate;
 
-                            if (!newHours || isNaN(newHours) || newHours < 0) {
-                                Swal.showValidationMessage("Por favor, ingresa un número válido de horas");
-                                return false;
-                            }
-
-                            updatedHours.push({
-                                horas: parseFloat(newHours),
-                                periodo: newPeriod,
-                                fecha: new Date(`${newDate}T${newTime}`).toISOString(),
-                                hora: newTime,
-                            });
-                        }
-                        return updatedHours;
-                    },
-                }).then((result) => {
-                    isEditHoursModalOpen = false;
-                    if (result.isConfirmed) {
-                        updateHoursForUser(userId, result.value)
-                            .then(() => Swal.fire("Éxito", "Cambios guardados correctamente", "success"))
-                            .catch(() => Swal.fire("Error", "No se pudieron guardar los cambios", "error"));
-                    }
-                });
-
-                // Agregar funcionalidad al botón Copiar Resumen
-                document.getElementById('copy-summary').addEventListener('click', () => {
-                    const summary = getSummaryText();
-                    copyToClipboard(summary);
-                });
+            if (isEditable) {
+              totalHoras += h.horas || 0;
+              totalSubtotal += subtotal;
             }
-        });
+
+            horasOptions += `
+              <tr>
+                <td data-label="Horas">
+                  <input type="number" id="edit-hours-${index}" class="form-control" value="${h.horas || ""}" 
+                      oninput="updateSubtotal(${index})" ${isEditable ? "" : "disabled"}>
+                </td>
+                <td data-label="Modificar">
+                  <select id="edit-period-${index}" class="form-control" onchange="updateSubtotal(${index})" ${isEditable ? "" : "disabled"}>
+                    ${Object.keys(periodRates).map((period) =>
+                      `<option value="${period}" ${h.periodo === period ? "selected" : ""}>${period}</option>`
+                    ).join("")}
+                  </select>
+                </td>
+                <td data-label="Inserto">
+                  <button type="button" class="btn btn-info">
+                    ${h.periodo ? h.periodo.charAt(0) : "N/A"}
+                  </button>
+                </td>
+                <td data-label="Fecha">
+                  <input type="date" id="edit-date-${index}" class="form-control" value="${formattedDate}">
+                </td>
+                <td data-label="Hora Inicio">
+                  <input type="time" id="edit-time-${index}" class="form-control" value="${formattedTime}" onchange="updateFinalTime(${index})">
+                </td>
+                <td id="final-time-${index}" class="text-end" data-label="Hora Final">
+                  ${calculateFinalTime(formattedTime, h.horas || 0)}
+                </td>
+                <td id="subtotal-${index}" class="text-end" data-label="Subtotal">
+                  ${subtotal.toFixed(2)}
+                </td>
+              </tr>
+            `;
+          });
+
+          horasOptions += `
+                      </tbody>
+                      <tfoot>
+                        <tr>
+                          <th id="total-hours">${totalHoras}</th>
+                          <th colspan="5" class="text-end">Total Subtotal</th>
+                          <th id="total-subtotal" class="text-end">${totalSubtotal.toFixed(2)}</th>
+                        </tr>
+                      </tfoot>
+                  </table>
+                  <button id="save-changes" class="btn btn-primary">Guardar Cambios</button>
+                  <button id="copy-summary" class="btn btn-secondary">Copiar Resumen</button>
+                  <button id="cerrarInformeGenereal" class="btn btn-secondary">Cerrar</button>
+                  </div>
+              `;
+
+          document.getElementById("cargarDetalles").innerHTML = horasOptions;
+
+          // Guardar cambios
+          document.getElementById("save-changes").addEventListener("click", function () {
+            const updatedHours = [];
+            for (let index = 0; index < horas.length; index++) {
+              const newHours = document.getElementById(`edit-hours-${index}`).value.trim();
+              const newPeriod = document.getElementById(`edit-period-${index}`).value;
+              const newDate = document.getElementById(`edit-date-${index}`).value.trim();
+              const newTime = document.getElementById(`edit-time-${index}`).value.trim();
+
+              if (!newHours || isNaN(newHours) || newHours < 0) {
+                Swal.showValidationMessage("Por favor, ingresa un número válido de horas");
+                return false;
+              }
+
+              updatedHours.push({
+                horas: parseFloat(newHours),
+                periodo: newPeriod,
+                fecha: new Date(`${newDate}T${newTime}`).toISOString(),
+                hora: newTime,
+              });
+            }
+
+            updateHoursForUser(userId, updatedHours)
+              .then(() => Swal.fire("Éxito", "Cambios guardados correctamente", "success"))
+              .catch(() => Swal.fire("Error", "No se pudieron guardar los cambios", "error"));
+          });
+
+          document.getElementById("copy-summary").addEventListener("click", function () {
+            let summary = "Resumen de Horas:\n\n";
+            horas.forEach((h, index) => {
+              const rate = periodRates[h.periodo] || 0;
+              const subtotal = (h.horas || 0) * rate;
+              summary += `Fecha: ${h.fecha}, Periodo: ${h.periodo}, Horas: ${h.horas}, Subtotal: ${subtotal.toFixed(2)}\n`;
+            });
+
+            navigator.clipboard.writeText(summary)
+              .then(() => Swal.fire("Éxito", "Resumen copiado al portapapeles", "success"))
+              .catch(() => Swal.fire("Error", "No se pudo copiar el resumen", "error"));
+          });
+
+          document.getElementById("cerrarInformeGenereal").addEventListener("click", function () {
+            cerrarInformeGenereal();
+          });
+        }
+      });
+  }).catch((error) => {
+    Swal.fire("Error", error, "error");
+  });
 }
+
 
 function calculateFinalTime(startTime, hoursToAdd) {
     const startDate = new Date(`1970-01-01T${startTime}:00Z`);
@@ -264,6 +337,11 @@ function updateFinalTime(index) {
 }
 
 function updateSubtotal(index) {
+    // Obtener las horas y el periodo de la fila actual
+    const hours = document.getElementById(`edit-hours-${index}`).value;
+    const period = document.getElementById(`edit-period-${index}`).value;
+
+    // Calcular el subtotal
     const periodRates = {
         "Normal ₡1400.31": 1400.31,
         "Diurnas ₡2241.31 (5:00am a las 19:00pm)": 2241.31,
@@ -271,38 +349,44 @@ function updateSubtotal(index) {
         "Nocturnas ₡2988.41 (22:00 a las 5:00am)": 2988.41,
     };
 
-    const hoursInput = document.getElementById(`edit-hours-${index}`);
-    const periodSelect = document.getElementById(`edit-period-${index}`);
+    const rate = periodRates[period] || 0;
+    const subtotal = parseFloat(hours) * rate;
+
+    // Actualizar el subtotal en la fila correspondiente
     const subtotalCell = document.getElementById(`subtotal-${index}`);
+    if (subtotalCell) {
+        subtotalCell.textContent = subtotal.toFixed(2);
+    }
 
-    const hours = parseFloat(hoursInput.value) || 0;
-    const rate = periodRates[periodSelect.value] || 0;
-    const subtotal = hours * rate;
-
-    subtotalCell.textContent = subtotal.toFixed(2);
-    updateTotals();
+    // Recalcular el total general de horas y subtotales
+    updateTotal();
 }
 
-function updateTotals() {
-    let totalSubtotal = 0;
+function updateTotal() {
     let totalHours = 0;
+    let totalSubtotal = 0;
 
-    const rows = document.querySelectorAll('#hours-table-body tr');
-
+    // Iterar sobre todas las filas para calcular el total
+    const rows = document.querySelectorAll("tbody tr");
     rows.forEach((row, index) => {
-        const hoursInput = document.getElementById(`edit-hours-${index}`);
-        const subtotalCell = document.getElementById(`subtotal-${index}`);
-
-        const hours = parseFloat(hoursInput?.value) || 0;
-        const subtotal = parseFloat(subtotalCell?.textContent) || 0;
+        const hours = parseFloat(document.getElementById(`edit-hours-${index}`).value) || 0;
+        const period = document.getElementById(`edit-period-${index}`).value;
+        const periodRates = {
+            "Normal ₡1400.31": 1400.31,
+            "Diurnas ₡2241.31 (5:00am a las 19:00pm)": 2241.31,
+            "Mixtas ₡2561.50 (19:00 a las 22:00)": 2561.5,
+            "Nocturnas ₡2988.41 (22:00 a las 5:00am)": 2988.41,
+        };
+        const rate = periodRates[period] || 0;
+        const subtotal = hours * rate;
 
         totalHours += hours;
         totalSubtotal += subtotal;
     });
 
-    // Actualizar totales en el footer
-    document.getElementById('total-hours').textContent = totalHours.toFixed(2);
-    document.getElementById('total-subtotal').textContent = totalSubtotal.toFixed(2);
+    // Actualizar los totales en el pie de la tabla
+    document.getElementById("total-hours").textContent = totalHours.toFixed(2);
+    document.getElementById("total-subtotal").textContent = totalSubtotal.toFixed(2);
 }
 
 
@@ -534,167 +618,189 @@ async function addHoursToUser(userId, hours, period, startTime) {
 
 
 function descargar() {
-  document.getElementById("misUsuarios").style.display = "none"; 
-  document.getElementById("usuariosTable").style.display = "block"; 
-
-  getDocs(collection(db, "usuarios"))
-    .then((querySnapshot) => {
-      let usuariosData = "";
-
-      // Iterar sobre cada documento y extraer sus datos
-      querySnapshot.forEach((doc) => {
-        const usuario = doc.data(); // Obtenemos los datos del usuario
-        const nombre = (usuario.name || "Sin nombre").toUpperCase(); // Nombre del usuario en mayúsculas
-        const cedula = (usuario.cedula || "Sin cédula").toUpperCase(); // Cédula en mayúsculas
-        const horas = usuario.horas || []; // Datos de horas
-
-        let totalHoras = 0;
-        let totalMonto = 0;
-
-        // Generar HTML para cada usuario
-        usuariosData += `
-        <div class="container p-2">
-          <h2>${nombre} - Cédula: ${cedula}</h2>  <!-- Mostrar nombre y cédula -->
-          <table class="table table-striped">
-            <thead>
-              <tr>
-                <th>Horas</th>
-                <th>Periodo</th>
-                <th>Fecha</th>
-                <th>Hora Inicio</th>
-                <th>Hora Fin</th> <!-- Nueva columna de hora fin -->
-                <th>Subtotal (Horas x Monto)</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${horas
-                .map((h) => {
-                  const fecha = h.fecha ? new Date(h.fecha).toISOString().split("T")[0] : "Sin fecha";
-                  const horaInicio = h.hora || "Sin hora";
-                  const periodo = h.periodo || "Sin periodo";
-                  const cantidadHoras = h.horas || 0;
-                  let monto = 0;
-
-                  // Extraer el monto del periodo
-                  const periodoParts = periodo.match(/₡([\d,\.]+)/);
-                  if (periodoParts && periodoParts[1]) {
-                    monto = parseFloat(periodoParts[1].replace(',', ''));
-                  }
-
-                  // Calcular el subtotal (Horas x Monto)
-                  const subtotal = cantidadHoras * monto;
-
-                  // Calcular la hora fin sumando las horas a la hora de inicio
-                  let horaFin = "Sin hora fin";
-                  if (horaInicio !== "Sin hora") {
-                    const [hora, minutos] = horaInicio.split(":").map((e) => parseInt(e, 10));
-                    const inicioDate = new Date(2000, 1, 1, hora, minutos); // Creando una fecha ficticia para hacer cálculos
-                    inicioDate.setHours(inicioDate.getHours() + cantidadHoras); // Sumando las horas
-                    const finHora = inicioDate.getHours().toString().padStart(2, "0");
-                    const finMinutos = inicioDate.getMinutes().toString().padStart(2, "0");
-                    horaFin = `${finHora}:${finMinutos}`; // Hora de fin en formato HH:MM
-                  }
-
-                  // Sumar las horas y el monto
-                  totalHoras += cantidadHoras;
-                  totalMonto += subtotal;
-
-                  return `
-                    <tr>
-                      <td>${cantidadHoras}</td>
-                      <td>${periodo}</td>
-                      <td>${fecha}</td>
-                      <td>${horaInicio}</td>
-                      <td>${horaFin}</td> <!-- Hora fin calculada -->
-                      <td>₡${subtotal.toFixed(2)}</td>
-                    </tr>
-                  `;
-                })
-                .join("")}
-            </tbody>
-            <tfoot>
-              <tr>
-                <th>Total Horas</th>
-                <th colspan="3" id="total-hours">${totalHoras.toFixed(2)}</th>
-                <th>Subtotal General</th>
-                <th id="total-subtotal">₡${totalMonto.toFixed(2)}</th>
-              </tr>
-            </tfoot>
-          </table>
-        </div>
-        `;
+  // Mostrar SweetAlert2 para ingresar la contraseña
+  Swal.fire({
+    title: 'Por favor ingrese la contraseña',
+    input: 'password', // El tipo de entrada es 'password' para ocultar los caracteres
+    inputPlaceholder: 'Ingrese la contraseña',
+    showCancelButton: true,
+    confirmButtonText: 'Aceptar',
+    cancelButtonText: 'Cancelar',
+    inputValidator: (value) => {
+      return new Promise((resolve, reject) => {
+        if (value === 'vale123') {  // Verificar la contraseña
+          resolve();  // Si la contraseña es correcta, resuelves la promesa
+        } else {
+          Swal.fire({
+  title: "Error de contraseña",
+  text: "Error de contraseña",
+  icon: "error"
+});
+      //    reject('Contraseña incorrecta');  // Si la contraseña es incorrecta, rechazas la promesa
+        }
       });
+    }
+  }).then((result) => {
+    // Si la contraseña es correcta, continuamos con la descarga de los datos
+    if (result.isConfirmed) {
+      document.getElementById("misUsuarios").style.display = "none";
+      document.getElementById("usuariosTable").style.display = "block";
 
-      // Mostrar los datos en la tabla HTML
-      
-      document.getElementById("usuariosTable").innerHTML = usuariosData;
+      getDocs(collection(db, "usuarios"))
+        .then((querySnapshot) => {
+          let usuariosData = "";
 
+          // Iterar sobre cada documento y extraer sus datos
+          querySnapshot.forEach((doc) => {
+            const usuario = doc.data(); // Obtenemos los datos del usuario
+            const nombre = (usuario.name || "Sin nombre").toUpperCase(); // Nombre del usuario en mayúsculas
+            const cedula = (usuario.cedula || "Sin cédula").toUpperCase(); // Cédula en mayúsculas
+            const horas = usuario.horas || []; // Datos de horas
 
-      
-      // Crear el dropdown para las opciones
-      const opcionesDropdown = `
-        <ul>
-        <li class="nav-item dropdown btn btn-primary">
-          <a class="nav-link dropdown-toggle" href="#" id="opcionesDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-            Opciones
-          </a>
-          <ul class="dropdown-menu" aria-labelledby="opcionesDropdown">
-            <li><a class="dropdown-item" id="btnCopiarResumen" href="#">Copiar Resumen</a></li>
-            <li><a class="dropdown-item" id="btnEnviarCorreo" href="#">Email</a></li>
-         
-            <li><a class="dropdown-item" id="btnDescargarPDF" href="#">PDF</a></li>
-            <li><a class="dropdown-item" id="btnDescargarExcel" href="#">Excel</a></li>
-          </ul>
+            let totalHoras = 0;
+            let totalMonto = 0;
 
-           
-        </li>
+            // Generar HTML para cada usuario
+            usuariosData += `
+            <div class="container p-2">
+              <h2>${nombre} - Cédula: ${cedula}</h2>  <!-- Mostrar nombre y cédula -->
+              <table class="table table-striped">
+                <thead>
+                  <tr>
+                    <th>Horas</th>
+                    <th>Periodo</th>
+                    <th>Fecha</th>
+                    <th>Hora Inicio</th>
+                    <th>Hora Fin</th> <!-- Nueva columna de hora fin -->
+                    <th>Subtotal (Horas x Monto)</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${horas
+                    .map((h) => {
+                      const fecha = h.fecha ? new Date(h.fecha).toISOString().split("T")[0] : "Sin fecha";
+                      const horaInicio = h.hora || "Sin hora";
+                      const periodo = h.periodo || "Sin periodo";
+                      const cantidadHoras = h.horas || 0;
+                      let monto = 0;
 
-          <li class="nav-item btn btn-primary" id="btnCerrarInforme">
-          <a class="nav-link " href="#" >
-            Cerrar
-          </a>
-        
-           
-        </li>
-              </ul>
-      `;
+                      // Extraer el monto del periodo
+                      const periodoParts = periodo.match(/₡([\d,\.]+)/);
+                      if (periodoParts && periodoParts[1]) {
+                        monto = parseFloat(periodoParts[1].replace(',', ''));
+                      }
 
-      // Insertar el dropdown debajo de los datos
-      document.getElementById("usuariosTable").innerHTML += opcionesDropdown;
+                      // Calcular el subtotal (Horas x Monto)
+                      const subtotal = cantidadHoras * monto;
 
-      // Agregar eventos a las opciones del menú
-      document.getElementById("btnCopiarResumen").addEventListener("click", () => {
-        const resumen = generateSummary(querySnapshot); // Generar el resumen
-        navigator.clipboard.writeText(resumen).then(() => {
-          Swal.fire("¡Éxito!", "Resumen copiado al portapapeles", "success");
-        }).catch(() => {
-          Swal.fire("Error", "No se pudo copiar el resumen", "error");
+                      // Calcular la hora fin sumando las horas a la hora de inicio
+                      let horaFin = "Sin hora fin";
+                      if (horaInicio !== "Sin hora") {
+                        const [hora, minutos] = horaInicio.split(":").map((e) => parseInt(e, 10));
+                        const inicioDate = new Date(2000, 1, 1, hora, minutos); // Creando una fecha ficticia para hacer cálculos
+                        inicioDate.setHours(inicioDate.getHours() + cantidadHoras); // Sumando las horas
+                        const finHora = inicioDate.getHours().toString().padStart(2, "0");
+                        const finMinutos = inicioDate.getMinutes().toString().padStart(2, "0");
+                        horaFin = `${finHora}:${finMinutos}`; // Hora de fin en formato HH:MM
+                      }
+
+                      // Sumar las horas y el monto
+                      totalHoras += cantidadHoras;
+                      totalMonto += subtotal;
+
+                      return `
+                        <tr>
+                          <td>${cantidadHoras}</td>
+                          <td>${periodo}</td>
+                          <td>${fecha}</td>
+                          <td>${horaInicio}</td>
+                          <td>${horaFin}</td> <!-- Hora fin calculada -->
+                          <td>₡${subtotal.toFixed(2)}</td>
+                        </tr>
+                      `;
+                    })
+                    .join("")}
+                </tbody>
+                <tfoot>
+                  <tr>
+                    <th>Total Horas</th>
+                    <th colspan="3" id="total-hours">${totalHoras.toFixed(2)}</th>
+                    <th>Subtotal General</th>
+                    <th id="total-subtotal">₡${totalMonto.toFixed(2)}</th>
+                  </tr>
+                </tfoot>
+              </table>
+            </div>
+            `;
+          });
+
+          // Mostrar los datos en la tabla HTML
+          document.getElementById("usuariosTable").innerHTML = usuariosData;
+
+          // Crear el dropdown para las opciones
+          const opcionesDropdown = `
+            <ul>
+              <li class="nav-item dropdown btn btn-primary">
+                <a class="nav-link dropdown-toggle" href="#" id="opcionesDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                  Opciones
+                </a>
+                <ul class="dropdown-menu" aria-labelledby="opcionesDropdown">
+                  <li><a class="dropdown-item" id="btnCopiarResumen" href="#">Copiar Resumen</a></li>
+                  <li><a class="dropdown-item" id="btnEnviarCorreo" href="#">Email</a></li>
+                  <li><a class="dropdown-item" id="btnDescargarPDF" href="#">PDF</a></li>
+                  <li><a class="dropdown-item" id="btnDescargarExcel" href="#">Excel</a></li>
+                </ul>
+              </li>
+              <li class="nav-item btn btn-primary" id="btnCerrarInforme">
+                <a class="nav-link" href="#">Cerrar</a>
+              </li>
+            </ul>
+          `;
+
+          // Insertar el dropdown debajo de los datos
+          document.getElementById("usuariosTable").innerHTML += opcionesDropdown;
+
+          // Agregar eventos a las opciones del menú
+          document.getElementById("btnCopiarResumen").addEventListener("click", () => {
+            const resumen = generateSummary(querySnapshot); // Generar el resumen
+            navigator.clipboard.writeText(resumen).then(() => {
+              Swal.fire("¡Éxito!", "Resumen copiado al portapapeles", "success");
+            }).catch(() => {
+              Swal.fire("Error", "No se pudo copiar el resumen", "error");
+            });
+          });
+
+          document.getElementById("btnEnviarCorreo").addEventListener("click", () => {
+            const resumen = generateSummary(querySnapshot); // Generar el resumen
+            enviarResumenPorCorreo(resumen);
+          });
+
+          document.getElementById("btnCerrarInforme").addEventListener("click", () => {
+            cerrarModal();
+          });
+
+          document.getElementById("btnDescargarPDF").addEventListener("click", () => {
+            descargarPDF();
+          });
+
+          document.getElementById("btnDescargarExcel").addEventListener("click", () => {
+            descargarExel();
+          });
+        })
+        .catch((error) => {
+          console.error("Error al cargar los usuarios:", error);
+          Swal.fire("Error", "No se pudieron cargar los datos de los usuarios", "error");
         });
-      });
-
-      document.getElementById("btnEnviarCorreo").addEventListener("click", () => {
-        const resumen = generateSummary(querySnapshot); // Generar el resumen
-        enviarResumenPorCorreo(resumen);
-      });
-
-      document.getElementById("btnCerrarInforme").addEventListener("click", () => {
-        cerrarModal();
-      });
-
-      document.getElementById("btnDescargarPDF").addEventListener("click", () => {
-        descargarPDF();
-      });
-
-      document.getElementById("btnDescargarExcel").addEventListener("click", () => {
-        descargarExel();
-      });
-    })
-    .catch((error) => {
-      console.error("Error al cargar los usuarios:", error);
-      Swal.fire("Error", "No se pudieron cargar los datos de los usuarios", "error");
+    }
+  }).catch((error) => {
+    // Si la contraseña es incorrecta, mostrar el error en un SweetAlert
+    Swal.fire({
+      icon: 'error',
+      title: 'Contraseña incorrecta',
+      text: error, // Muestra el mensaje de error proporcionado
     });
+  });
 }
-
 
 function descargarExel() {
   // Obtener la tabla de usuarios
@@ -841,6 +947,7 @@ function generateSummary(querySnapshot) {
   return summary;
 }
 
+window.cerrarInformeGenereal = cerrarInformeGenereal;
 window.showPeriodDetails = showPeriodDetails;
 window.descargar = descargar;
 window.showEditHoursModal = showEditHoursModal;
@@ -853,56 +960,84 @@ window.deleteUser = deleteUser;
 </head>
 
 
-<body class="container">
-
-
-  <div class="d-flex p-2">
-    <button class="btn btn-primary mb-3" onclick="showAddUserModal()">Nuevo Usuario</button>
-    <button class="btn btn-primary mb-3" onclick="descargar()">Informe</button>
-
-  </div>
-  <h1 class="text-center mb-4">Horas Extras</h1>
-    <!-- Contenedor para hacer la tabla responsive -->
+<body>
+  
  
-    <div class="container">
-      <div id="usuariosTable" class="container-fluid p-2"  style="display: none; width: 100% !important;">
-
+<div class="container-fluid">
+  <nav class="navbar navbar-expand-lg navbar-light bg-light">
+    <div class="container-fluid">
+      <a class="navbar-brand" href="#">Horas Extras</a>
+  
+      <!-- Botón toggler para pantallas pequeñas -->
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+  
+      <!-- Elementos de la navegación -->
+      <div class="collapse navbar-collapse" id="navbarSupportedContent">
+        <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+          <li class="nav-item">
+            <a class="nav-link active" aria-current="page" href="#" onclick="showAddUserModal()">Nuevo Usuario</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="#" onclick="descargar()">Informe</a>
+          </li>
+        </ul>
       </div>
-
-      
-      <div id="success-message" class="alert alert-success" style="display: none;">
-        Cambios guardados correctamente.
-      </div>
-      
     </div>
-     
+  </nav>
+  
+  <div id="bodyDetalles" style="display: block; background-color: red;">
+    <div id="cargarDetalles" >
+
+    </div>
+  </div>
+ 
 
 
-  <div class="container mt-5">
+  <div class="container">
+
+    <div id="usuariosTable" class="container-fluid p-2"  style="display: none; width: 100% !important;">
+
+    </div>
 
     
-    <div class="card" id="misUsuarios">
-      <div class="card-body">
-        <h5 class="card-title">Lista de Usuarios</h5>
-      <!-- Tabla con la nueva columna para eliminar -->
+    <div id="success-message" class="alert alert-success" style="display: none;">
+      Cambios guardados correctamente.
+    </div>
+    
+  </div>
+   
+
+
+<div class="container mt-5">
+
+  
+  <div class="card" id="misUsuarios">
+    <div class="card-body">
+      <h5 class="card-title">Lista de Usuarios</h5>
+    <!-- Tabla con la nueva columna para eliminar -->
 <table class="table table-bordered mt-3">
-  <thead class="table-dark">
-    <tr>
-      <th>ID</th>
-      <th>Nombre</th>
-      <th>Password</th>
-      <th>Horas Extra</th>
-      <th>Acciones</th> <!-- Nueva columna -->
-    </tr>
-  </thead>
-  <tbody id="user-table-body">
-    <!-- Los datos de usuarios se cargarán aquí -->
-  </tbody>
+<thead class="table-dark">
+  <tr>
+
+    <th>Nombre</th>
+   
+   
+    <th>Acciones</th> <!-- Nueva columna -->
+  </tr>
+</thead>
+<tbody id="user-table-body">
+  <!-- Los datos de usuarios se cargarán aquí -->
+</tbody>
 </table>
 
-      </div>
     </div>
   </div>
+</div>
+</div>
+ 
+   
 </body>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 
