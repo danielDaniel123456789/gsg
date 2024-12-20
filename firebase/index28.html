@@ -13,6 +13,10 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
 
   <style>
+    body{
+      background-color: #fbfcfc;
+    }
+    
     #cargarDetalles{
       overflow-y: auto;
       padding-left: 10px;
@@ -20,6 +24,11 @@
       margin-top: 10px;
       margin-bottom: 10px;
       display: none;
+    }
+
+    .iconoPrincipal{
+      padding-top: 10px;
+      font-weight: 200;
     }
   </style>
   <script type="module">
@@ -523,67 +532,101 @@ function showAddUserModal() {
   });
 }
 
-    function showHoursModal(userId, userName) {
+function showHoursModal(userId, userName) {
+  // Paso 1: Solicitar la contraseña
   Swal.fire({
-    title: `Agregar Horas Extra para ${userName}`,
-    showCloseButton: true,
-    html: `
-      <div class="mb-3">
-        <label for="swal-hours" class="form-label">Horas</label>
-        <input type="number" id="swal-hours" class="form-control" placeholder="Ingresa las horas" min="1">
-      </div>
-      <div class="mb-3">
-        <label for="swal-period" class="form-label">Periodo</label>
-        <select id="swal-period" class="form-select" aria-label="Selecciona el periodo">
-          <option value="" selected>Selecciona el periodo</option>
-          <option value="Hora ₡1400\.31">Hora ₡1400\.31</option>
-          <option value="Diurna ₡2241.31
-">Diurna ₡2241.31
-</option>
-          <option value="Mixta ₡2561.50
-">Mixta ₡2561.50
-</option>
-          <option value="Nocturna ₡2988.41">Nocturna ₡2988.41</option>
-        </select>
-      </div>
-      <div class="mb-3">
-        <label for="swal-start-time" class="form-label">Hora de inicio</label>
-        <input type="time" id="swal-start-time" class="form-control" aria-label="Hora de inicio">
-      </div>
-    `,
-    confirmButtonText: 'Guardar',
-    preConfirm: () => {
-      const hours = document.getElementById("swal-hours").value.trim();
-      const period = document.getElementById("swal-period").value;
-      const startTime = document.getElementById("swal-start-time").value;
+    title: 'Ingrese su Contraseña',
+    input: 'password',
+    inputPlaceholder: 'Escribe tu contraseña',
+    showCancelButton: true,
+    confirmButtonText: 'Ingresar',
+    cancelButtonText: 'Cancelar',
+    preConfirm: (password) => {
+      return new Promise((resolve, reject) => {
+        const userRef = doc(db, "usuarios", userId);
+        getDoc(userRef)
+          .then((userDoc) => {
+            if (userDoc.exists()) {
+              const userData = userDoc.data();
+              const storedPassword = userData.contraseya;
 
-      // Validaciones
-      if (!hours || isNaN(hours) || hours <= 0) {
-        Swal.showValidationMessage("Por favor, ingresa un número válido de horas");
-        return false;
-      }
-
-      if (!period) {
-        Swal.showValidationMessage("Por favor, selecciona un periodo");
-        return false;
-      }
-
-      if (!startTime) {
-        Swal.showValidationMessage("Por favor, ingresa una hora de inicio");
-        return false;
-      }
-
-      // Si todo es válido, devolver los datos
-      return { hours, period, startTime };
-    }
+              if (password.trim() === storedPassword.trim()) {
+                resolve();
+              } else {
+                reject("Contraseña incorrecta");
+              }
+            } else {
+              reject("Usuario no encontrado");
+            }
+          })
+          .catch((error) => {
+            reject("Error al verificar la contraseña");
+          });
+      });
+    },
   }).then((result) => {
     if (result.isConfirmed) {
-      const { hours, period, startTime } = result.value;
+      // Paso 2: Mostrar el formulario para ingresar horas extra
+      Swal.fire({
+        title: `Agregar Horas Extra para ${userName}`,
+        showCloseButton: true,
+        html: `
+          <div class="mb-3">
+            <label for="swal-hours" class="form-label">Horas</label>
+            <input type="number" id="swal-hours" class="form-control" placeholder="Ingresa las horas" min="1">
+          </div>
+          <div class="mb-3">
+            <label for="swal-period" class="form-label">Periodo</label>
+            <select id="swal-period" class="form-select" aria-label="Selecciona el periodo">
+              <option value="" selected>Selecciona el periodo</option>
+              <option value="Hora ₡1400.31">Hora ₡1400.31</option>
+              <option value="Diurna ₡2241.31">Diurna ₡2241.31</option>
+              <option value="Mixta ₡2561.50">Mixta ₡2561.50</option>
+              <option value="Nocturna ₡2988.41">Nocturna ₡2988.41</option>
+            </select>
+          </div>
+          <div class="mb-3">
+            <label for="swal-start-time" class="form-label">Hora de inicio</label>
+            <input type="time" id="swal-start-time" class="form-control" aria-label="Hora de inicio">
+          </div>
+        `,
+        confirmButtonText: 'Guardar',
+        preConfirm: () => {
+          const hours = document.getElementById("swal-hours").value.trim();
+          const period = document.getElementById("swal-period").value;
+          const startTime = document.getElementById("swal-start-time").value;
 
-      // Aquí es donde se procesa la opción seleccionada, incluyendo "Normal"
-      console.log(`ID: ${userId}, Horas: ${hours}, Periodo: ${period}, Hora de inicio: ${startTime}`);
-      addHoursToUser(userId, hours, period, startTime);
+          // Validaciones
+          if (!hours || isNaN(hours) || hours <= 0) {
+            Swal.showValidationMessage("Por favor, ingresa un número válido de horas");
+            return false;
+          }
+
+          if (!period) {
+            Swal.showValidationMessage("Por favor, selecciona un periodo");
+            return false;
+          }
+
+          if (!startTime) {
+            Swal.showValidationMessage("Por favor, ingresa una hora de inicio");
+            return false;
+          }
+
+          // Si todo es válido, devolver los datos
+          return { hours, period, startTime };
+        }
+      }).then((result) => {
+        if (result.isConfirmed) {
+          const { hours, period, startTime } = result.value;
+          
+          // Aquí es donde se procesa la opción seleccionada, incluyendo "Normal"
+          console.log(`ID: ${userId}, Horas: ${hours}, Periodo: ${period}, Hora de inicio: ${startTime}`);
+          addHoursToUser(userId, hours, period, startTime);
+        }
+      });
     }
+  }).catch((error) => {
+    Swal.fire("Error", error, "error");
   });
 }
 
@@ -661,11 +704,10 @@ function descargar() {
           resolve();  // Si la contraseña es correcta, resuelves la promesa
         } else {
           Swal.fire({
-  title: "Error de contraseña",
-  text: "Error de contraseña",
-  icon: "error"
-});
-      //    reject('Contraseña incorrecta');  // Si la contraseña es incorrecta, rechazas la promesa
+            title: "Error de contraseña",
+            text: "Error de contraseña",
+            icon: "error"
+          });
         }
       });
     }
@@ -674,6 +716,29 @@ function descargar() {
     if (result.isConfirmed) {
       document.getElementById("misUsuarios").style.display = "none";
       document.getElementById("usuariosTable").style.display = "block";
+
+      // Crear el dropdown para las opciones
+      const opcionesDropdown = `
+        <ul>
+          <li class="nav-item dropdown btn btn-primary">
+            <a class="nav-link dropdown-toggle" href="#" id="opcionesDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+              Opciones
+            </a>
+            <ul class="dropdown-menu" aria-labelledby="opcionesDropdown">
+              <li><a class="dropdown-item" id="btnCopiarResumen" href="#">Copiar Resumen</a></li>
+              <li><a class="dropdown-item" id="btnEnviarCorreo" href="#">Email</a></li>
+              <li><a class="dropdown-item" id="btnDescargarPDF" href="#">PDF</a></li>
+              <li><a class="dropdown-item" id="btnDescargarExcel" href="#">Excel</a></li>
+            </ul>
+          </li>
+          <li class="nav-item btn btn-primary" id="btnCerrarInforme">
+            <a class="nav-link" href="#">Cerrar</a>
+          </li>
+        </ul>
+      `;
+
+      // Insertar el dropdown encima de la tabla
+      document.getElementById("usuariosTable").insertAdjacentHTML('beforebegin', opcionesDropdown);
 
       getDocs(collection(db, "usuarios"))
         .then((querySnapshot) => {
@@ -765,29 +830,6 @@ function descargar() {
 
           // Mostrar los datos en la tabla HTML
           document.getElementById("usuariosTable").innerHTML = usuariosData;
-
-          // Crear el dropdown para las opciones
-          const opcionesDropdown = `
-            <ul>
-              <li class="nav-item dropdown btn btn-primary">
-                <a class="nav-link dropdown-toggle" href="#" id="opcionesDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                  Opciones
-                </a>
-                <ul class="dropdown-menu" aria-labelledby="opcionesDropdown">
-                  <li><a class="dropdown-item" id="btnCopiarResumen" href="#">Copiar Resumen</a></li>
-                  <li><a class="dropdown-item" id="btnEnviarCorreo" href="#">Email</a></li>
-                  <li><a class="dropdown-item" id="btnDescargarPDF" href="#">PDF</a></li>
-                  <li><a class="dropdown-item" id="btnDescargarExcel" href="#">Excel</a></li>
-                </ul>
-              </li>
-              <li class="nav-item btn btn-primary" id="btnCerrarInforme">
-                <a class="nav-link" href="#">Cerrar</a>
-              </li>
-            </ul>
-          `;
-
-          // Insertar el dropdown debajo de los datos
-          document.getElementById("usuariosTable").innerHTML += opcionesDropdown;
 
           // Agregar eventos a las opciones del menú
           document.getElementById("btnCopiarResumen").addEventListener("click", () => {
@@ -976,6 +1018,38 @@ function generateSummary(querySnapshot) {
   return summary;
 }
 
+
+function menuPrincipal() {
+  Swal.fire({
+    title: 'Menú',
+    html: `
+
+    <div class="d-grid gap-2">
+  <button class="btn btn-primary" onclick="showAddUserModal()" type="button">Agregar Usuario</button>
+  <button class="btn btn-primary" type="button"  onclick="descargar()">Informe</button>
+</div>
+
+   
+    `,
+    showCancelButton: true,  // Muestra el botón de cancelar
+    cancelButtonText: 'Cancelar',  // Texto del botón de cancelar
+    focusCancel: true,  // Enfoca el botón de cancelar
+    showConfirmButton: false,  // Elimina el botón de aceptar
+  });
+}
+
+
+// Función para manejar la acción cuando se hace clic en uno de los botones
+function handleAction(action) {
+  Swal.fire({
+    icon: 'success',
+    title: `${action} seleccionada`,
+    text: `Has seleccionado la opción: ${action}`,
+  });
+}
+
+ 
+window.menuPrincipal = menuPrincipal;
 window.cerrarInformeGenereal = cerrarInformeGenereal;
 window.showPeriodDetails = showPeriodDetails;
 window.descargar = descargar;
@@ -993,18 +1067,14 @@ window.deleteUser = deleteUser;
   
  
 <div class="container-fluid">
-  <ul class="nav">
-    <li class="nav-item">
-     
-      <a class="nav-link active" aria-current="page" href="#" onclick="showAddUserModal()">Nuevo Usuario</a>
-    </li>
-    <li class="nav-item">
-      <a class="nav-link" href="#" onclick="descargar()">Informe</a>
-    </li>
+ 
 
-  </ul>
-<hr>
-  
+
+    <img src="./img/logo.png"  width="15%" onclick="menuPrincipal()">
+
+
+ 
+
   <div id="bodyDetalles" >
     <div id="cargarDetalles" >
 
@@ -1032,10 +1102,10 @@ window.deleteUser = deleteUser;
 
   
   <div  id="misUsuarios">
-    <div class=" p-2">
+    <div class="">
       <h5 class="card-title text-center">Horas Extras</h5>
     <!-- Tabla con la nueva columna para eliminar -->
-<table class="table table-bordered mt-3">
+<table class="table mt-3">
 <thead class="table-dark">
   <tr>
 
