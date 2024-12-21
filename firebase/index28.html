@@ -149,7 +149,7 @@ function mostrarDetalles(){
 }
 
 function showEditHoursModal(userId, name) {
-
+  let miArray = [];
   let sumarSubtotal=0;
   Swal.fire({
     title: "Ingrese su Contraseña",
@@ -265,17 +265,23 @@ horas.forEach((h, index) => {
       ${calculateFinalTime(formattedTime, h.horas || 0)}
     </td>
     <td id="subtotal-${index}" class="text-end" data-label="Subtotal">
-${h.periodo ? h.periodo.replace(/[^0-9.,]/g, "").trim() : "N/A"}
+    ${ multiplicarValores(h.periodo ? h.periodo.replace(/[^0-9.,]/g, "").trim() : "0",h.horas)}
 
+ <div hidden>   
+${ miArray.push(multiplicarValores(h.periodo ? h.periodo.replace(/[^0-9.,]/g, "").trim() : "N/A",h.horas)) } 
 
+ </div>  
     </td>
   </tr>
 `;
 sumarSubtotal = sumar(sumarSubtotal, h.periodo.replace(/[^0-9.,]/g, "").trim() );
 
-
 });
              
+
+let calcularSuma = miArray.reduce((acumulador, valorActual) => acumulador + valorActual, 0);
+
+console.log(calcularSuma);  // Output: 100
 
               horasOptions += `
                           </tbody>
@@ -283,7 +289,7 @@ sumarSubtotal = sumar(sumarSubtotal, h.periodo.replace(/[^0-9.,]/g, "").trim() )
                             <tr>
                               <th id="total-hours">${totalHoras}</th>
                               <th colspan="5" class="text-end">Total Subtotal</th>
-                              <th id="total-subtotal" class="text-end">${sumarSubtotal}</th>
+                              <th id="total-subtotal" class="text-end">${calcularSuma}</th>
                             </tr>
                           </tfoot>
                       </table>
@@ -318,6 +324,16 @@ sumarSubtotal = sumar(sumarSubtotal, h.periodo.replace(/[^0-9.,]/g, "").trim() )
         Swal.fire("Error", error, "error");
       }
     });
+}
+
+
+function multiplicarValores(valor1, valor2) {
+    // Convertir los valores a enteros
+    const num1 = parseInt(valor1);
+    const num2 = parseInt(valor2);
+
+    // Realizar la multiplicación
+    return num1 * num2;
 }
 
 function sumar(a, b) {
@@ -646,7 +662,7 @@ async function addHoursToUser(userId, hours, period, startTime) {
       const newHourRecord = {
         horas: parseInt(hours),
         periodo: period,
-        fecha: new Date().toISOString(),
+       fecha : new Date().toISOString().split('T')[0],
         hora: startTime
       };
       console.log("Nuevo registro de horas:", newHourRecord);
@@ -1011,14 +1027,20 @@ function cerrarModal(){
 }
 
 function generateSummary(querySnapshot) {
-  let summary = "Fecha\tHoras\tInicio\tFin\tSubtotal\tPeríodo\n";
-
-  let totalHoras = 0; // Total general de horas
-  let totalSubt = 0;  // Total general de subtotales
+  let summary = "";
 
   querySnapshot.forEach((doc) => {
     const usuario = doc.data();
+    const usuarioNombre = usuario.name || "Sin nombre";
+    const cedula = usuario.cedula || "Sin cédula";
     const horas = usuario.horas || [];
+
+    // Encabezado para cada usuario
+    summary += `Nombre: ${usuarioNombre}\nCédula: ${cedula}\n\n`;
+    summary += "Fecha\tHoras\tInicio\tFin\tSubtotal\tPeríodo\n";
+
+    let totalHorasUsuario = 0; // Total horas por usuario
+    let totalSubtUsuario = 0;  // Total subtotales por usuario
 
     horas.forEach((h) => {
       const fecha = h.fecha ? new Date(h.fecha).toISOString().split("T")[0] : "Sin fecha";
@@ -1036,8 +1058,8 @@ function generateSummary(querySnapshot) {
 
       // Calcula el subtotal
       const subtotal = cantidadHoras * monto;
-      totalSubt += subtotal; // Acumula el subtotal al total general
-      totalHoras += cantidadHoras; // Acumula las horas al total general
+      totalSubtUsuario += subtotal; // Acumula el subtotal al total por usuario
+      totalHorasUsuario += cantidadHoras; // Acumula las horas al total por usuario
 
       // Calcula la hora de fin
       let horaFin = "Sin hora fin";
@@ -1053,10 +1075,10 @@ function generateSummary(querySnapshot) {
       // Agrega los datos de la fila
       summary += `${fecha}\t${cantidadHoras}\t${horaInicio}\t${horaFin}\t₡${subtotal.toFixed(2)}\t${periodo}\n`;
     });
-  });
 
-  // Agrega los totales al final del resumen
-  summary += `\nTotal Horas:\t${totalHoras}\tTotal Subtotal:\t₡${totalSubt.toFixed(2)}\n`;
+    // Totales por usuario
+    summary += `\nTotal Horas: ${totalHorasUsuario}\tTotal Subtotal: ₡${totalSubtUsuario.toFixed(2)}\n\n`;
+  });
 
   return summary;
 }

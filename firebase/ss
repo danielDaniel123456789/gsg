@@ -1,5 +1,17 @@
-Fecha	Horas	Inicio	Fin	Subtotal
-2024-12-20	2	12:12	14:12	₡2241.31
-2024-12-20	1	11:11	12:11	₡2561.50
+Nombre: dballes
+Cédula: 123
 
-Total Horas:	3	Total Subtotal:	₡4802
+Fecha	Horas	Inicio	Fin	Subtotal	Período
+2024-12-20	12	12:12	00:12	₡16803.72	Normal ₡1400.31
+2024-12-20	2	22:22	00:22	₡5123.00	Mixtas ₡2561.50
+
+Total Horas: 14	Total Subtotal: ₡21926.72
+
+Nombre: webdesign
+Cédula: 123
+
+Fecha	Horas	Inicio	Fin	Subtotal	Período
+2024-12-20	1	12:12	13:12	₡1400.31	Hora ₡1400.31
+
+Total Horas: 1	Total Subtotal: ₡1400.31
+
