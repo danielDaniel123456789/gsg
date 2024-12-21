@@ -44,6 +44,7 @@
   doc, 
   getDoc, 
   updateDoc, 
+  arrayUnion,
   deleteDoc // Asegúrate de agregar esta línea
 } from "https://www.gstatic.com/firebasejs/9.17.2/firebase-firestore.js";
     const firebaseConfig = {
@@ -326,6 +327,27 @@ console.log(calcularSuma);  // Output: 100
     });
 }
 
+function updateTotals() {
+    let totalSubtotal = 0;
+    let totalHours = 0;
+
+    const rows = document.querySelectorAll('#hours-table-body tr');
+
+    rows.forEach((row, index) => {
+        const hoursInput = document.getElementById(`edit-hours-${index}`);
+        const subtotalCell = document.getElementById(`subtotal-${index}`);
+
+        const hours = parseFloat(hoursInput?.value) || 0;
+        const subtotal = parseFloat(subtotalCell?.textContent) || 0;
+
+        totalHours += hours;
+        totalSubtotal += subtotal;
+    });
+
+    // Actualizar totales en el footer
+    document.getElementById('total-hours').textContent = totalHours.toFixed(2);
+    document.getElementById('total-subtotal').textContent = totalSubtotal.toFixed(2);
+}
 
 function multiplicarValores(valor1, valor2) {
     // Convertir los valores a enteros
@@ -587,12 +609,36 @@ function showHoursModal(userId, userName) {
             <label for="swal-start-time" class="form-label">Hora de inicio</label>
             <input type="time" id="swal-start-time" class="form-control" aria-label="Hora de inicio">
           </div>
+          <div class="mb-3">
+            <label for="swal-airline" class="form-label">Aerolínea</label>
+            <select id="swal-airline" class="form-select" aria-label="Selecciona la aerolínea">
+              <option value="" selected>Selecciona la aerolínea</option>
+              <option value="Aerolínea A">Aerolínea A</option>
+              <option value="Aerolínea B">Aerolínea B</option>
+              <option value="Aerolínea C">Aerolínea C</option>
+              <option value="Aerolínea D">Aerolínea D</option>
+              <option value="Aerolínea E">Aerolínea E</option>
+            </select>
+          </div>
+          <div class="mb-3">
+            <label for="swal-reason" class="form-label">Motivo de la Extra</label>
+            <select id="swal-reason" class="form-select" aria-label="Selecciona el motivo">
+              <option value="" selected>Selecciona el motivo</option>
+              <option value="Motivo A">Motivo A</option>
+              <option value="Motivo B">Motivo B</option>
+              <option value="Motivo C">Motivo C</option>
+              <option value="Motivo D">Motivo D</option>
+              <option value="Motivo E">Motivo E</option>
+            </select>
+          </div>
         `,
         confirmButtonText: 'Guardar',
         preConfirm: () => {
           const hours = document.getElementById("swal-hours").value.trim();
           const period = document.getElementById("swal-period").value;
           const startTime = document.getElementById("swal-start-time").value;
+          const airline = document.getElementById("swal-airline").value;
+          const reason = document.getElementById("swal-reason").value;
 
           // Validaciones
           if (!hours || isNaN(hours) || hours <= 0) {
@@ -610,16 +656,25 @@ function showHoursModal(userId, userName) {
             return false;
           }
 
+          if (!airline) {
+            Swal.showValidationMessage("Por favor, selecciona una aerolínea");
+            return false;
+          }
+
+          if (!reason) {
+            Swal.showValidationMessage("Por favor, selecciona un motivo");
+            return false;
+          }
+
           // Si todo es válido, devolver los datos
-          return { hours, period, startTime };
+          return { hours, period, startTime, airline, reason };
         }
       }).then((result) => {
         if (result.isConfirmed) {
-          const { hours, period, startTime } = result.value;
-          
-          // Aquí es donde se procesa la opción seleccionada, incluyendo "Normal"
-          console.log(`ID: ${userId}, Horas: ${hours}, Periodo: ${period}, Hora de inicio: ${startTime}`);
-          addHoursToUser(userId, hours, period, startTime);
+          const { hours, period, startTime, airline, reason } = result.value;
+
+          console.log(`ID: ${userId}, Horas: ${hours}, Periodo: ${period}, Hora de inicio: ${startTime}, Aerolínea: ${airline}, Motivo: ${reason}`);
+          addHoursToUser(userId, hours, period, startTime, airline, reason);
         }
       });
     }
@@ -650,8 +705,22 @@ async function deleteUser(userId) {
   }
 }
 
-async function addHoursToUser(userId, hours, period, startTime) {
+
+
+async function addHoursToUser(userId, hours, period, startTime, airline, reason) {
   try {
+    // Validación inicial
+    if (!userId) {
+      Swal.fire("Error", "El ID del usuario no es válido", "error");
+      return;
+    }
+
+    if (!hours || isNaN(hours) || hours <= 0 || !period || !startTime || !airline || !reason) {
+      Swal.fire("Error", "Todos los campos son obligatorios y deben ser válidos", "error");
+      return;
+    }
+
+    // Referencia al documento del usuario
     const userRef = doc(db, "usuarios", userId);
     const userDoc = await getDoc(userRef);
 
@@ -659,21 +728,29 @@ async function addHoursToUser(userId, hours, period, startTime) {
       const currentHours = userDoc.data().horas || [];
       console.log("Horas actuales antes de actualizar:", currentHours);
 
+      // Nuevo registro de horas
       const newHourRecord = {
-        horas: parseInt(hours),
+        horas: parseInt(hours, 10),
         periodo: period,
-       fecha : new Date().toISOString().split('T')[0],
-        hora: startTime
+        fecha: new Date().toISOString().split('T')[0], // Formato YYYY-MM-DD
+        hora: startTime,
+        aerolinea: airline,
+        motivo: reason,
       };
       console.log("Nuevo registro de horas:", newHourRecord);
 
+      // Actualización de las horas
       currentHours.push(newHourRecord);
 
       await updateDoc(userRef, { horas: currentHours });
 
       console.log("Horas actualizadas:", currentHours);
       Swal.fire("Éxito", "Horas extra agregadas correctamente", "success");
-      cargarDatos(); // Recargar la lista de usuarios
+
+      // Recargar datos (asegúrate de que esta función esté definida)
+      if (typeof cargarDatos === "function") {
+        cargarDatos();
+      }
     } else {
       Swal.fire("Error", "Usuario no encontrado", "error");
     }
@@ -682,6 +759,49 @@ async function addHoursToUser(userId, hours, period, startTime) {
     Swal.fire("Error", "No se pudieron agregar las horas extra", "error");
   }
 }
+
+async function fetchUsers() {
+  showLoading();  // Mostrar indicador de carga
+  try {
+    const tableBody = document.getElementById("user-table-body");
+    tableBody.innerHTML = ""; // Limpiar la tabla
+
+    const querySnapshot = await getDocs(collection(db, "usuarios"));
+    querySnapshot.forEach((doc) => {
+      const horas = Array.isArray(doc.data().horas)
+        ? doc.data().horas
+            .map(
+              (h, index) =>
+                `${h.horas} (${h.periodo}) - ${new Date(h.fecha).toLocaleString()} `
+            )
+            .join("<br>")
+        : "No hay horas registradas"; // Mostrar las horas registradas
+
+      const row = document.createElement("tr");
+      row.innerHTML = `
+        <td>${doc.id}</td>
+        <td>${doc.data().name}</td>
+        <td>${doc.data().contraseya}</td>
+        <td>${doc.data().cedula}</td>  <!-- Mostrar el número de cédula -->
+        <td>
+           <button class="btn btn-primary" onclick="showEditHoursModal('${doc.id}', '${doc.data().name}')">Resumen</button>
+        </td>
+        <td>
+          <button class="btn btn-warning" onclick="showHoursModal('${doc.id}', '${doc.data().name}')">Insertar horas</button>
+          <button class="btn btn-danger" onclick="deleteUser('${doc.id}')">Eliminar</button>
+        </td>
+      `;
+
+      tableBody.appendChild(row);
+    });
+  } catch (e) {
+    console.error("Error al obtener documentos: ", e);
+    Swal.fire("Error", "Hubo un problema al cargar los usuarios.", "error");
+  } finally {
+    Swal.close();  // Cerrar indicador de carga
+  }
+}
+
 
 function descargar() {
   // Mostrar SweetAlert2 para ingresar la contraseña
@@ -995,24 +1115,47 @@ function descargarExcel() {
 
 function descargarPDF() {
   const { jsPDF } = window.jspdf;
-
   const doc = new jsPDF();
   const usuariosTable = document.getElementById("usuariosTable");
 
-  // Usar html2canvas para capturar el contenido
-  html2canvas(usuariosTable).then((canvas) => {
-    const imgData = canvas.toDataURL("image/png"); // Convertir canvas a imagen
-    const imgWidth = 190; // Ajusta el ancho según el tamaño del PDF
-    const pageHeight = 285; // Altura de la página
-    const imgHeight = (canvas.height * imgWidth) / canvas.width; // Escalar la altura proporcionalmente
-    let position = 10; // Margen superior
+  // Agregar títulos al PDF
+  const titulo = "GSG";
+  const titulo2 = "Registro de Horas Extras";
+  const fecha = new Date().toLocaleDateString(); // Fecha actual en formato local
 
-    doc.addImage(imgData, "PNG", 10, position, imgWidth, imgHeight); // Agregar imagen al PDF
-    doc.save("informe_usuarios.pdf"); // Descargar el PDF
-  }).catch((error) => {
-    console.error("Error al generar el PDF:", error);
-    Swal.fire("Error", "No se pudo generar el PDF", "error");
-  });
+  doc.setFontSize(16); // Tamaño del título principal
+  doc.text(titulo, 10, 10); // Título principal en la posición (10, 10)
+  doc.setFontSize(14); // Tamaño del segundo título
+  doc.text(titulo2, 10, 20); // Segundo título en la posición (10, 20)
+
+  // Agregar fecha al lado derecho
+  doc.setFontSize(12); // Tamaño de la fecha
+  const pageWidth = doc.internal.pageSize.getWidth(); // Obtener ancho de la página
+  doc.text(`Fecha: ${fecha}`, pageWidth - 50, 20); // Fecha alineada a la derecha
+
+  // Agregar líneas para firmas justo debajo de los títulos
+  const firmaPositionY = 35; // Posición vertical inicial para las firmas
+  doc.setFontSize(10); // Tamaño de texto para las firmas
+  doc.text("Firma del Supervisor:", 10, firmaPositionY); // Texto de la firma del supervisor
+  doc.line(60, firmaPositionY - 2, 150, firmaPositionY - 2); // Línea para la firma del supervisor
+  doc.text("Firma de Revisado:", 10, firmaPositionY + 10); // Texto de la firma de revisado
+  doc.line(60, firmaPositionY + 8, 150, firmaPositionY + 8); // Línea para la firma de revisado
+
+  // Usar html2canvas para capturar el contenido
+  html2canvas(usuariosTable)
+    .then((canvas) => {
+      const imgData = canvas.toDataURL("image/png"); // Convertir canvas a imagen
+      const imgWidth = 190; // Ajusta el ancho según el tamaño del PDF
+      const imgHeight = (canvas.height * imgWidth) / canvas.width; // Escalar la altura proporcionalmente
+      let position = firmaPositionY + 20; // Ajustar posición después de las firmas
+
+      doc.addImage(imgData, "PNG", 10, position, imgWidth, imgHeight); // Agregar imagen al PDF
+      doc.save("informe_usuarios.pdf"); // Descargar el PDF
+    })
+    .catch((error) => {
+      console.error("Error al generar el PDF:", error);
+      Swal.fire("Error", "No se pudo generar el PDF", "error");
+    });
 }
 
 function cerrarModal(){
