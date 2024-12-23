@@ -31,6 +31,12 @@
       padding-top: 10px;
       font-weight: 200;
     }
+
+    .swal2-container.swal2-center.swal2-backdrop-show {
+    background-color: #fbfcfc;
+}
+
+
   </style>
 <script type="module">
 
@@ -197,7 +203,7 @@ function showEditHoursModal(userId, name) {
             if (userDoc.exists()) {
               const horas = userDoc.data().horas || [];
               const periodRates = {
-                "Normal ₡1400.31": 1400.31,
+                "Normal ₡1494.31": 1400.31,
                 "Diurnas ₡2241.31 (5:00am a las 19:00pm)": 2241.31,
                 "Mixtas ₡2561.50 (19:00 a las 22:00)": 2561.5,
                 "Nocturnas ₡2988.41 (22:00 a las 5:00am)": 2988.41,
@@ -572,7 +578,7 @@ function showHoursModal(userId, userName) {
             <label for="swal-period" class="form-label">Periodo</label>
             <select id="swal-period" class="form-select" aria-label="Selecciona el periodo">
               <option value="" selected>Selecciona el periodo</option>
-              <option value="Hora ₡1400.31">Hora ₡1400.31</option>
+              <option value="Hora ₡1494.31">Hora ₡1494.31</option>
               <option value="Diurna ₡2241.31">Diurna ₡2241.31</option>
               <option value="Mixta ₡2561.50">Mixta ₡2561.50</option>
               <option value="Nocturna ₡2988.41">Nocturna ₡2988.41</option>
@@ -904,8 +910,10 @@ function descargar() {
       </tbody>
       <tfoot>
         <tr>
-          <th>Total Horas</th>
-          <th colspan="4" id="total-hours">${totalHoras.toFixed(2)}</th>
+          <th id="total-hours" > ${totalHoras.toFixed(2)}</th>
+            <th></th>
+
+          <th colspan="4" ></th>
           <th>Subtotal General</th>
           <th id="total-subtotal">₡${totalMonto.toFixed(2)}</th>
         </tr>
@@ -959,53 +967,111 @@ function descargar() {
   });
 }
 
-function limpiarHoras() {
+async function limpiarHoras() {
+  // Obtener el mes actual y los días en ese mes
+  const currentDate = new Date();
+  const currentYear = currentDate.getFullYear();
+  const currentMonth = currentDate.getMonth(); // Mes actual (0-11)
+  const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate(); // Días del mes actual
+
+  // Nombres de los meses
+  const monthNames = [
+    "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
+    "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"
+  ];
+
+  // Crear las opciones para los select
+  let dayOptions = '';
+  for (let i = 1; i <= daysInMonth; i++) {
+    dayOptions += `<option value="${i}">${i}</option>`;
+  }
+
+  let monthOptions = '';
+  for (let i = 0; i < 12; i++) { // Mostrar los meses por nombre
+    monthOptions += `<option value="${i + 1}">${monthNames[i]}</option>`; // Meses numerados de 1 a 12
+  }
+
+  let yearOptions = '';
+  for (let i = currentYear - 5; i <= currentYear + 5; i++) { // Limitar años a 5 antes y después
+    yearOptions += `<option value="${i}">${i}</option>`;
+  }
+
   // Mostrar SweetAlert2 con formulario para seleccionar la fecha
   Swal.fire({
-    title: 'Selecciona la fecha para eliminar horas',
+    title: 'Nueva quincena',
     html: `
-      <input type="date" id="fechaLimite" class="swal2-input" required>
+      <label for="dia">Día:</label>
+      <select id="dia" class="swal2-input" required>
+        ${dayOptions}
+      </select>
+      <label for="mes">Mes:</label>
+      <select id="mes" class="swal2-input" required>
+        ${monthOptions}
+      </select>
+      <label for="anio">Año:</label>
+      <select id="anio" class="swal2-input" required>
+        ${yearOptions}
+      </select>
     `,
     confirmButtonText: 'Eliminar',
     cancelButtonText: 'Cancelar',
     showCancelButton: true,
     preConfirm: () => {
-      const fechaLimite = document.getElementById('fechaLimite').value;
-      if (!fechaLimite) {
-        Swal.showValidationMessage("Por favor selecciona una fecha.");
+      const dia = document.getElementById('dia').value;
+      const mes = document.getElementById('mes').value;
+      const anio = document.getElementById('anio').value;
+
+      if (!dia || !mes || !anio) {
+        Swal.showValidationMessage("Por favor selecciona todos los campos.");
         return false;
       }
-      return fechaLimite;
+
+      // Formar la fecha como 'YYYY-MM-DD'
+      const fechaFormateada = `${anio}-${mes.padStart(2, '0')}-${dia.padStart(2, '0')}`;
+      return fechaFormateada;
     }
   }).then((result) => {
     if (result.isConfirmed) {
       const fechaLimite = result.value;
+      
       // Convertir la fecha seleccionada en formato Date
-      const fecha = new Date(fechaLimite);
+      const fechaInput = new Date(fechaLimite);
 
       // Filtrar usuarios que tengan horas anteriores a la fecha seleccionada
       getDocs(collection(db, "usuarios"))
         .then((querySnapshot) => {
-          querySnapshot.forEach((doc) => {
-            const usuario = doc.data();
+          querySnapshot.forEach(async (docSnapshot) => {
+            const usuario = docSnapshot.data();
             const horas = usuario.horas || [];
 
-            // Filtrar horas para obtener solo aquellas antes de la fecha seleccionada
-            const horasFiltradas = horas.filter((h) => new Date(h.fecha) <= fecha);
+            // Filtrar horas para obtener solo aquellas cuyo 'fecha' sea menor a la seleccionada
+            const horasFiltradas = horas.filter((h) => {
+              const horaFecha = new Date(h.fecha);
+              const fechaHora = horaFecha.toISOString().split('T')[0];  // Formatear fecha como 'YYYY-MM-DD'
+              return fechaHora < fechaLimite;  // Comparar las fechas formateadas
+            });
 
             if (horasFiltradas.length > 0) {
+              // Obtener la referencia al documento de usuario
+              const usuarioRef = doc(db, "usuarios", docSnapshot.id);
+
               // Eliminar las horas filtradas del documento
-              const usuarioRef = doc.ref;
-              const horasActualizadas = horas.filter((h) => new Date(h.fecha) > fecha);
+              const horasActualizadas = horas.filter((h) => {
+                const horaFecha = new Date(h.fecha);
+                const fechaHora = horaFecha.toISOString().split('T')[0];
+                return fechaHora >= fechaLimite;  // Mantener solo las horas posteriores a la fecha seleccionada
+              });
 
               // Actualizar el documento con las horas restantes
-              usuarioRef.update({
-                horas: horasActualizadas
-              }).then(() => {
+              try {
+                await updateDoc(usuarioRef, {
+                  horas: horasActualizadas
+                });
                 console.log(`Horas eliminadas para ${usuario.name}`);
-              }).catch((error) => {
+              } catch (error) {
                 console.error("Error al actualizar las horas: ", error);
-              });
+                Swal.fire("Error", "No se pudo actualizar las horas", "error");
+              }
             }
           });
 
@@ -1234,6 +1300,7 @@ function handleAction(action) {
   });
 }
 
+window.limpiarHoras = limpiarHoras;
 window.menuPrincipal = menuPrincipal;
 window.cerrarInformeGenereal = cerrarInformeGenereal;
 window.showPeriodDetails = showPeriodDetails;
@@ -1250,6 +1317,8 @@ window.deleteUser = deleteUser;
 <body>
 <div class="container-fluid">
     <img src="./img/logo.png"  width="15%" onclick="menuPrincipal()">
+
+    <button onclick="limpiarHoras()">Limpiar</button>
   <div id="bodyDetalles" >
     <div id="cargarDetalles" >
 
