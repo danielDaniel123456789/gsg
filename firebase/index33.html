@@ -15,7 +15,7 @@
 
 
     <style>
-        .footer {
+        .header {
             position: absolute;
 
             left: 10px;
@@ -27,6 +27,13 @@
         #titulo {
             color: #d5dbdb;
             z-index: -1 !important;
+            padding-top: 20px;
+        }
+
+        #imgLogo{
+           position: absolute;
+           right: 20px;
+
         }
 
         #usuariosTable {
@@ -1060,7 +1067,7 @@
                 confirmButtonText: 'Eliminar',
                 cancelButtonText: 'Cancelar',
                 showCancelButton: true,
-                footer: `<strong>Año actual: ${currentYear}</strong>`,
+                header: `<strong>Año actual: ${currentYear}</strong>`,
                 preConfirm: () => {
                     const dia = document.getElementById('dia').value;
                     const mes = document.querySelector('input[name="mesSelector"]:checked').value;
@@ -1386,13 +1393,12 @@
 </head>
 
 <body>
-    <div class="footer">
+    <img src="./img/logo.png" onclick="menuPrincipal()" width="20%" id="imgLogo">
+    <div class="header">
 
         <i id="registrarUsuario" class="fa fa-user-plus fa-2x" aria-hidden="true" onclick="registrarUsuario()"></i>
-        <img src="./img/logo.png" onclick="menuPrincipal()" width="20%">
-
-
-    </div>
+     
+ </div>
     <div class="container-fluid">
         <div id="titulo" class="card-title text-center" >
             <h2 >Aeropuerto Internacional  </h2>
