@@ -30,12 +30,28 @@
             padding-top: 20px;
         }
 
-        #imgLogo{
-           position: absolute;
-           right: 20px;
-
+        #imgLogo {
+            position: absolute;
+            right: 10%;
+            top: 10px;
+           
+            z-index: 4;
         }
 
+
+
+        @media (max-width: 400px) {
+  #imgLogo {
+    width: 15%;
+  }
+}
+
+/* Si el ancho está entre 401px y 800px, ocupa el 50% */
+@media (min-width: 401px){
+  #imgLogo {
+    width: 8%;
+  }
+}
         #usuariosTable {
             margin-top: 44px;
         }
