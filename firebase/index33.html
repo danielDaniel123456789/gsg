@@ -124,6 +124,7 @@
                 });
 
                 Swal.fire("Éxito", `Usuario agregado con ID: ${docRef.id}`, "success");
+                reproducirAudio();
                 cargarDatos(); // Actualizar la tabla
             } catch (e) {
                 console.error("Error al agregar documento: ", e);
@@ -459,6 +460,7 @@
                     horas: updatedHours
                 })
                 .then(() => {
+                    reproducirAudio();
                     Swal.fire("Guardado", "Los cambios se han guardado correctamente", "success");
                     showEditHoursModal(userId, name);
                 })
@@ -862,6 +864,7 @@
                     });
 
                     console.log("Horas actualizadas:", currentHours);
+                    reproducirAudio();
                     Swal.fire("Éxito", "Horas extra agregadas correctamente", "success");
 
                     // Recargar datos (asegúrate de que esta función esté definida)
@@ -1387,14 +1390,22 @@
         }
 
         function registrarUsuario() {
+            reproducirAudio();
             showAddUserModal();
             exit;
 
         }
 
         function menuPrincipal() {
+            reproducirAudio();
             descargarAndCloseModal();
 
+
+        }
+
+        function reproducirAudio(){
+            const audio = new Audio('../sonidos/sonido1.mp3'); // Reemplaza con la ruta de tu archivo MP3
+    audio.play().catch(error => console.error('Error al reproducir el sonido:', error));
 
         }
 
@@ -1446,7 +1457,8 @@
         }
 
 
-
+        
+        window.reproducirAudio = reproducirAudio;
         window.confirmDeleteUser = confirmDeleteUser;
         window.registrarUsuario = registrarUsuario;
         window.addUserAndCloseModal = addUserAndCloseModal;
