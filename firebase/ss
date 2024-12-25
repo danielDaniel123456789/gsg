@@ -1,10 +1,10 @@
 Nombre: dballestero
 Cédula: 123
 
-Fecha	Horas	Inicio	Fin	Subtotal	Período
-2024-12-24	1	11:11	12:11	₡1494.31	Normal ₡1494.31
-2024-12-24	3	12:33	15:33	₡4482.93	Normal ₡1494.31
-2024-12-24	1	11:01	12:01	₡1494.31	Hora ₡1494.31
+Fecha	Horas	Inicio	Fin	    Subtotal	     Período	     Motivo	    Aerolínea
+2024-12-24	1	11:11	12:11	₡1494.31	Normal ₡1494.31	Capacitación	Air Transat
+2024-12-24	3	12:33	15:33	₡4482.93	Normal ₡1494.31	Poco personal	Iberojet
+2024-12-24	1	11:01	12:01	₡1494.31	Hora ₡1494.31	Poco personal	Iberojet
 
 Total Horas: 5	Total Subtotal: ₡7471.55
 

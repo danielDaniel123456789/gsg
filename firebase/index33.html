@@ -12,13 +12,21 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"
+  />
 
     <style>
+        .swal2-popup.swal2-modal.swal2-show {
+    background-color: #d5dbdb;
+}
         .header {
             position: absolute;
 
             left: 10px;
             top: 30px;
+            z-index: 5;
 
 
         }
@@ -29,33 +37,12 @@
             padding-top: 20px;
         }
 
-        #imgLogo {
-            position: absolute;
-            right: 10%;
-            top: 10px;
-
-            z-index: 4;
-        }
+     
+      
 
 
 
-        @media (max-width: 400px) {
-            #imgLogo {
-                width: 15%;
-            }
-        }
-
-        /* Si el ancho está entre 401px y 800px, ocupa el 50% */
-        @media (min-width: 401px) {
-            #imgLogo {
-                width: 8%;
-                margin-right: 45px;
-            }
-        }
-
-        #usuariosTable {
-            margin-top: 44px;
-        }
+       
 
 
         #menuopcionesDropdown {
@@ -64,6 +51,7 @@
             top: 10px;
             color: white;
             text-align: center;
+            z-index: 8 !important;
         }
 
 
@@ -153,11 +141,11 @@
                 querySnapshot.forEach((doc) => {
                     const horas = Array.isArray(doc.data().horas) ?
                         doc.data().horas
-                            .map(
-                                (h, index) =>
-                                    `${h.horas} (${h.periodo}) - ${new Date(h.fecha).toLocaleString()} `
-                            )
-                            .join("<br>") :
+                        .map(
+                            (h, index) =>
+                            `${h.horas} (${h.periodo}) - ${new Date(h.fecha).toLocaleString()} `
+                        )
+                        .join("<br>") :
                         "No hay horas registradas"; // Mostrar las horas registradas
 
                     const row = document.createElement("tr");
@@ -216,39 +204,39 @@
             let sumarTotal = 0;
             let calcularSuma = 0;
             Swal.fire({
-                title: "Ingrese su Contraseña",
-                input: "password",
-                inputPlaceholder: "Escriba su contraseña",
-                showCancelButton: true,
-                confirmButtonText: "Ingresar",
-                cancelButtonText: "Cancelar",
-                allowOutsideClick: false,
-                allowEscapeKey: false,
-                preConfirm: (password) => {
-                    return new Promise((resolve, reject) => {
-                        const userRef = doc(db, "usuarios", userId);
-                        getDoc(userRef)
-                            .then((userDoc) => {
-                                if (userDoc.exists()) {
-                                    const userData = userDoc.data();
-                                    const storedPassword = userData.contraseya;
+                    title: "Ingrese su Contraseña",
+                    input: "password",
+                    inputPlaceholder: "Escriba su contraseña",
+                    showCancelButton: true,
+                    confirmButtonText: "Ingresar",
+                    cancelButtonText: "Cancelar",
+                    allowOutsideClick: false,
+                    allowEscapeKey: false,
+                    preConfirm: (password) => {
+                        return new Promise((resolve, reject) => {
+                            const userRef = doc(db, "usuarios", userId);
+                            getDoc(userRef)
+                                .then((userDoc) => {
+                                    if (userDoc.exists()) {
+                                        const userData = userDoc.data();
+                                        const storedPassword = userData.contraseya;
 
-                                    if (password.trim() === storedPassword.trim()) {
-                                        resolve();
+                                        if (password.trim() === storedPassword.trim()) {
+                                            resolve();
+                                        } else {
+                                            reject("Contraseña incorrecta");
+                                        }
                                     } else {
-                                        reject("Contraseña incorrecta");
+                                        reject("Usuario no encontrado");
                                     }
-                                } else {
-                                    reject("Usuario no encontrado");
-                                }
-                            })
-                            .catch((error) => {
-                                console.error("Error al verificar la contraseña:", error);
-                                reject("Error al verificar la contraseña");
-                            });
-                    });
-                },
-            })
+                                })
+                                .catch((error) => {
+                                    console.error("Error al verificar la contraseña:", error);
+                                    reject("Error al verificar la contraseña");
+                                });
+                        });
+                    },
+                })
                 .then((result) => {
                     if (result.isConfirmed) {
                         // Aquí continua la lógica si la contraseña es correcta
@@ -337,18 +325,18 @@
     ${multiplicarValores(h.periodo ? h.periodo.replace(/[^0-9.,]/g, "").trim() : "0", h.horas)}
 <div>
  ${miArray.push(multiplicarValores(h.periodo ? h.periodo.replace(/[^0-9.,]/g, "").trim() : "0", h.horas))
-                                            }    aqui--rev
+                                            }    
     </div>
    
   </td>
 </tr>
 `;
- });
+                                    });
 
-       for (let i = 0; i < miArray.length; i++) {
-                                        calcularSuma = calcularSuma+ miArray[i];
+                                    for (let i = 0; i < miArray.length; i++) {
+                                        calcularSuma = calcularSuma + miArray[i];
                                         console.log('sumar array: ' + calcularSuma)
-       }
+                                    }
 
                                     horasOptions += `
                           </tbody>
@@ -356,7 +344,7 @@
                             <tr>
                               <th id="total-hours">${totalHoras}</th>
                               <th colspan="5" class="text-end">Total Subtotal</th>
-                              <th id="total-subtotal" class="text-end">${calcularSuma} iii</th>
+                              <th id="total-subtotal" class="text-end">${calcularSuma} </th>
                             </tr>
                           </tfoot>
                       </table>
@@ -371,7 +359,7 @@
 
                                     document.getElementById("cargarDetalles").innerHTML = horasOptions;
 
-                                    document.getElementById("save-changes").onclick = function () {
+                                    document.getElementById("save-changes").onclick = function() {
                                         salvarCambios(horas, userId, name); // Pasar horas y userId
                                     };
 
@@ -468,8 +456,8 @@
 
             const userRef = doc(db, "usuarios", userId);
             updateDoc(userRef, {
-                horas: updatedHours
-            })
+                    horas: updatedHours
+                })
                 .then(() => {
                     Swal.fire("Guardado", "Los cambios se han guardado correctamente", "success");
                     showEditHoursModal(userId, name);
@@ -758,7 +746,7 @@
             });
         }
 
-        async function deleteUser(userId) {
+        async function deleteUserxxxxxxxxxxxx(userId) {
             try {
                 const confirmation = await Swal.fire({
                     title: "¿Estás seguro?",
@@ -780,6 +768,58 @@
             }
         }
 
+        async function deleteUser() {
+            try {
+                const querySnapshot = await getDocs(collection(db, "usuarios"));
+                let userListHTML = '<ul style="list-style: none; padding: 0;">';
+
+                querySnapshot.forEach((doc) => {
+                    userListHTML += `
+        <li style="margin-bottom: 10px;">
+          <span>${doc.data().name}</span>
+          <button class="btn btn-danger btn-sm" style="margin-left: 10px;" onclick="confirmDeleteUser('${doc.id}', '${doc.data().name}')">
+            Eliminar
+          </button>
+        </li>
+      `;
+                });
+
+                userListHTML += '</ul>';
+
+                await Swal.fire({
+                    title: "Seleccionar Usuario para Eliminar",
+                    html: userListHTML,
+                    showCloseButton: true,
+                    showConfirmButton: false, // No necesitamos el botón de confirmar general
+                });
+            } catch (e) {
+                console.error("Error al cargar usuarios para eliminar: ", e);
+                Swal.fire("Error", "Hubo un problema al cargar los usuarios.", "error");
+            }
+        }
+
+        async function confirmDeleteUser(userId, userName) {
+            try {
+                const confirmation = await Swal.fire({
+                    title: `¿Eliminar a ${userName}?`,
+                    text: "Esta acción no se puede deshacer.",
+                    icon: "warning",
+                    showCancelButton: true,
+                    confirmButtonText: "Sí, eliminar",
+                    cancelButtonText: "Cancelar",
+                });
+
+                if (confirmation.isConfirmed) {
+                    await deleteDoc(doc(db, "usuarios", userId));
+                    Swal.fire("Eliminado", `${userName} ha sido eliminado correctamente.`, "success");
+                    //   showDeleteUserModal(); // Actualizar la lista
+                    cargarDatos(); // Actualizar la tabla principal
+                }
+            } catch (e) {
+                console.error("Error al eliminar usuario: ", e);
+                Swal.fire("Error", "No se pudo eliminar el usuario.", "error");
+            }
+        }
 
 
         async function addHoursToUser(userId, hours, period, startTime, airline, reason) {
@@ -847,11 +887,11 @@
                 querySnapshot.forEach((doc) => {
                     const horas = Array.isArray(doc.data().horas) ?
                         doc.data().horas
-                            .map(
-                                (h, index) =>
-                                    `${h.horas} (${h.periodo}) - ${new Date(h.fecha).toLocaleString()} `
-                            )
-                            .join("<br>") :
+                        .map(
+                            (h, index) =>
+                            `${h.horas} (${h.periodo}) - ${new Date(h.fecha).toLocaleString()} `
+                        )
+                        .join("<br>") :
                         "No hay horas registradas"; // Mostrar las horas registradas
 
                     const row = document.createElement("tr");
@@ -887,6 +927,9 @@
             // Crear el dropdown para las opciones
             const opcionesDropdown = `
         <ul id="menuopcionesDropdown" class="mb-3">
+                <li class="nav-item btn btn-primary" onclick="deleteUser()" ><i class="fa fa-trash" aria-hidden="true"></i></a></li>
+         
+                
             <li class="nav-item btn btn-primary" id="btnCopiarResumen" ><a class="nav-link"  href="#"><i class="fa fa-clone" aria-hidden="true"></i></a></li>
             <li class="nav-item btn btn-primary" id="btnDescargarPDF" ><a class="nav-link"  href="#">PDF</a></li>
             <li class="nav-item btn btn-primary" onclick="limpiarHoras()"><a class="nav-link" id="btnLimpiar"  href="#"><i class="fa fa-hourglass-half" aria-hidden="true"></i></a></li>
@@ -1131,7 +1174,14 @@
                         });
 
                         await batch.commit(); // Confirmar los cambios
-                        Swal.fire("¡Éxito!", "Horas eliminadas correctamente.", "success");
+                        Swal.fire("¡Éxito!", "Horas eliminadas correctamente.", "success").then((
+                        result) => {
+                            if (result.isConfirmed) {
+                                // Recargar la página
+                                location.reload();
+                            }
+                        });
+
                     } catch (error) {
                         console.error("Error al eliminar las horas: ", error);
                         Swal.fire("Error", "Hubo un problema al eliminar las horas.", "error");
@@ -1218,50 +1268,54 @@
         }
 
         function descargarPDF() {
-    const { jsPDF } = window.jspdf;
-    const doc = new jsPDF();
-    const usuariosTable = document.getElementById("usuariosTable");
+            const {
+                jsPDF
+            } = window.jspdf;
+            const doc = new jsPDF();
+            const usuariosTable = document.getElementById("usuariosTable");
 
-    // Agregar títulos al PDF
-    const titulo = "GSG";
-    const titulo2 = "Registro de Horas Extras";
-    const fecha = new Date().toLocaleDateString(); // Fecha actual en formato local
+            // Agregar títulos al PDF
+            const titulo = "GSG";
+            const titulo2 = "Registro de Horas Extras";
+            const fecha = new Date().toLocaleDateString(); // Fecha actual en formato local
 
-    doc.setFontSize(16); // Tamaño del título principal
-    doc.text(titulo, 10, 10); // Título principal en la posición (10, 10)
-    doc.setFontSize(14); // Tamaño del segundo título
-    doc.text(titulo2, 10, 20); // Segundo título en la posición (10, 20)
+            doc.setFontSize(16); // Tamaño del título principal
+            doc.text(titulo, 10, 10); // Título principal en la posición (10, 10)
+            doc.setFontSize(14); // Tamaño del segundo título
+            doc.text(titulo2, 10, 20); // Segundo título en la posición (10, 20)
 
-    // Agregar fecha al lado derecho
-    doc.setFontSize(12); // Tamaño de la fecha
-    const pageWidth = doc.internal.pageSize.getWidth(); // Obtener ancho de la página
-    doc.text(`Fecha: ${fecha}`, pageWidth - 50, 20); // Fecha alineada a la derecha
+            // Agregar fecha al lado derecho
+            doc.setFontSize(12); // Tamaño de la fecha
+            const pageWidth = doc.internal.pageSize.getWidth(); // Obtener ancho de la página
+            doc.text(`Fecha: ${fecha}`, pageWidth - 50, 20); // Fecha alineada a la derecha
 
-    // Agregar firmas en una sola línea
-    const firmaPositionY = 30; // Posición vertical del texto
-    const lineOffsetY = 3; // Desplazamiento de la línea hacia abajo desde el texto
-    doc.setFontSize(10); // Tamaño de texto para las firmas
-    doc.text("Firma del Supervisor:", 10, firmaPositionY); // Texto de la firma del supervisor
-    doc.line(50, firmaPositionY + lineOffsetY, 100, firmaPositionY + lineOffsetY); // Línea para la firma del supervisor
-    doc.text("Firma de Revisado:", 110, firmaPositionY); // Texto de la firma de revisado
-    doc.line(150, firmaPositionY + lineOffsetY, 200, firmaPositionY + lineOffsetY); // Línea para la firma de revisado
+            // Agregar firmas en una sola línea
+            const firmaPositionY = 30; // Posición vertical del texto
+            const lineOffsetY = 3; // Desplazamiento de la línea hacia abajo desde el texto
+            doc.setFontSize(10); // Tamaño de texto para las firmas
+            doc.text("Firma del Supervisor:", 10, firmaPositionY); // Texto de la firma del supervisor
+            doc.line(50, firmaPositionY + lineOffsetY, 100, firmaPositionY +
+            lineOffsetY); // Línea para la firma del supervisor
+            doc.text("Firma de Revisado:", 110, firmaPositionY); // Texto de la firma de revisado
+            doc.line(150, firmaPositionY + lineOffsetY, 200, firmaPositionY +
+            lineOffsetY); // Línea para la firma de revisado
 
-    // Usar html2canvas para capturar el contenido
-    html2canvas(usuariosTable)
-        .then((canvas) => {
-            const imgData = canvas.toDataURL("image/png"); // Convertir canvas a imagen
-            const imgWidth = 190; // Ajusta el ancho según el tamaño del PDF
-            const imgHeight = (canvas.height * imgWidth) / canvas.width; // Escalar la altura proporcionalmente
-            let position = firmaPositionY + 15; // Ajustar posición después de las firmas
+            // Usar html2canvas para capturar el contenido
+            html2canvas(usuariosTable)
+                .then((canvas) => {
+                    const imgData = canvas.toDataURL("image/png"); // Convertir canvas a imagen
+                    const imgWidth = 190; // Ajusta el ancho según el tamaño del PDF
+                    const imgHeight = (canvas.height * imgWidth) / canvas.width; // Escalar la altura proporcionalmente
+                    let position = firmaPositionY + 15; // Ajustar posición después de las firmas
 
-            doc.addImage(imgData, "PNG", 10, position, imgWidth, imgHeight); // Agregar imagen al PDF
-            doc.save("informe_usuarios.pdf"); // Descargar el PDF
-        })
-        .catch((error) => {
-            console.error("Error al generar el PDF:", error);
-            Swal.fire("Error", "No se pudo generar el PDF", "error");
-        });
-}
+                    doc.addImage(imgData, "PNG", 10, position, imgWidth, imgHeight); // Agregar imagen al PDF
+                    doc.save("informe_usuarios.pdf"); // Descargar el PDF
+                })
+                .catch((error) => {
+                    console.error("Error al generar el PDF:", error);
+                    Swal.fire("Error", "No se pudo generar el PDF", "error");
+                });
+        }
 
         function cerrarModal() {
 
@@ -1275,57 +1329,62 @@
         }
 
         function generateSummary(querySnapshot) {
-    let summary = "";
+            let summary = "";
 
-    querySnapshot.forEach((doc) => {
-        const usuario = doc.data();
-        const usuarioNombre = usuario.name || "Sin nombre";
-        const cedula = usuario.cedula || "Sin cédula";
-        const horas = usuario.horas || [];
+            querySnapshot.forEach((doc) => {
+                const usuario = doc.data();
+                const usuarioNombre = usuario.name || "Sin nombre";
+                const cedula = usuario.cedula || "Sin cédula";
+                const horas = usuario.horas || [];
 
-        summary += `Nombre: ${usuarioNombre}\nCédula: ${cedula}\n\n`;
-        summary += "Fecha\tHoras\tInicio\tFin\tSubtotal\tPeríodo\n";
+                summary += `Nombre: ${usuarioNombre}\nCédula: ${cedula}\n\n`;
+                summary += "Fecha\tHoras\tInicio\tFin\t    Subtotal\t     Período\t     Motivo\t    Aerolínea\n";
 
-        let totalHorasUsuario = 0;
-        let totalSubtUsuario = 0;
+                let totalHorasUsuario = 0;
+                let totalSubtUsuario = 0;
 
-        horas.forEach((h) => {
-            const fecha = h.fecha ? new Date(h.fecha).toISOString().split("T")[0] : "Sin fecha";
-            const horaInicio = h.hora || "Sin hora";
-            const cantidadHoras = h.horas || 0;
-            let periodo = h.periodo || "Sin periodo";
-            let monto = 0;
+                horas.forEach((h) => {
+                    const fecha = h.fecha ? new Date(h.fecha).toISOString().split("T")[0] : "Sin fecha";
+                    const horaInicio = h.hora || "Sin hora";
+                    const cantidadHoras = h.horas || 0;
+                    const motivo = h.motivo || "Sin motivo";
+                    const aerolinea = h.aerolinea || "Sin aerolínea";
+                    let periodo = h.periodo || "Sin periodo";
+                    let monto = 0;
 
-            try {
-                periodo = periodo.replace(/\s?\(.*\)\s?/g, "");
-                const periodoParts = periodo.match(/₡([\d,\.]+)/);
-                monto = periodoParts && periodoParts[1] ? parseFloat(periodoParts[1].replace(',', '')) : 0;
-            } catch (error) {
-                console.error("Error procesando período:", error, periodo);
-            }
+                    try {
+                        periodo = periodo.replace(/\s?\(.*\)\s?/g, "");
+                        const periodoParts = periodo.match(/₡([\d,\.]+)/);
+                        monto = periodoParts && periodoParts[1] ? parseFloat(periodoParts[1].replace(',',
+                            '')) : 0;
+                    } catch (error) {
+                        console.error("Error procesando período:", error, periodo);
+                    }
 
-            const subtotal = cantidadHoras * monto;
-            totalSubtUsuario += subtotal;
-            totalHorasUsuario += cantidadHoras;
+                    const subtotal = cantidadHoras * monto;
+                    totalSubtUsuario += subtotal;
+                    totalHorasUsuario += cantidadHoras;
 
-            let horaFin = "Sin hora fin";
-            if (horaInicio !== "Sin hora") {
-                const [hora, minutos] = horaInicio.split(":").map((e) => parseInt(e, 10));
-                const inicioDate = new Date(2000, 1, 1, hora, minutos);
-                inicioDate.setHours(inicioDate.getHours() + cantidadHoras);
-                const finHora = inicioDate.getHours().toString().padStart(2, "0");
-                const finMinutos = inicioDate.getMinutes().toString().padStart(2, "0");
-                horaFin = `${finHora}:${finMinutos}`;
-            }
+                    let horaFin = "Sin hora fin";
+                    if (horaInicio !== "Sin hora") {
+                        const [hora, minutos] = horaInicio.split(":").map((e) => parseInt(e, 10));
+                        const inicioDate = new Date(2000, 1, 1, hora, minutos);
+                        inicioDate.setHours(inicioDate.getHours() + cantidadHoras);
+                        const finHora = inicioDate.getHours().toString().padStart(2, "0");
+                        const finMinutos = inicioDate.getMinutes().toString().padStart(2, "0");
+                        horaFin = `${finHora}:${finMinutos}`;
+                    }
 
-            summary += `${fecha}\t${cantidadHoras}\t${horaInicio}\t${horaFin}\t₡${subtotal.toFixed(2)}\t${periodo}\n`;
-        });
+                    summary +=
+                        `${fecha}\t${cantidadHoras}\t${horaInicio}\t${horaFin}\t₡${subtotal.toFixed(2)}\t${periodo}\t${motivo}\t${aerolinea}\n`;
+                });
 
-        summary += `\nTotal Horas: ${totalHorasUsuario}\tTotal Subtotal: ₡${totalSubtUsuario.toFixed(2)}\n\n`;
-    });
+                summary +=
+                    `\nTotal Horas: ${totalHorasUsuario}\tTotal Subtotal: ₡${totalSubtUsuario.toFixed(2)}\n\n`;
+            });
 
-    return summary;
-}
+            return summary;
+        }
 
         function registrarUsuario() {
             showAddUserModal();
@@ -1388,6 +1447,7 @@
 
 
 
+        window.confirmDeleteUser = confirmDeleteUser;
         window.registrarUsuario = registrarUsuario;
         window.addUserAndCloseModal = addUserAndCloseModal;
         window.descargarAndCloseModal = descargarAndCloseModal;
@@ -1408,19 +1468,26 @@
 </head>
 
 <body>
-    <img src="./img/logo.png" onclick="menuPrincipal()" width="20%" id="imgLogo">
+    
+   
     <div class="header">
-
+ 
+        <i class="fa fa-book fa-2x" aria-hidden="true" onclick="menuPrincipal()"  id="imgLogo" onclick="menuPrincipal()" ></i>
+        <br>
         <i id="registrarUsuario" class="fa fa-user-plus fa-2x" aria-hidden="true" onclick="registrarUsuario()"></i>
+      
+
 
     </div>
     <div class="container-fluid">
         <div id="titulo" class="card-title text-center">
-            <h2>Aeropuerto Internacional </h2>
-            <h2> Juan Santamaría </h2>
+
+            <img src="./img/logo.png" width="10%" class="animate__animated animate__backInDown ">
+            <h2 class="animate__animated animate__backInDown ">Aeropuerto Internacional </h2>
+            <h2 class="animate__animated animate__backInDown "> Juan Santamaría </h2>
         </div>
 
-        <div id="bodyDetalles">
+        <div id="bodyDetalles"  class="animate__animated animate__backInDown ">
             <div id="cargarDetalles">
 
             </div>
@@ -1438,28 +1505,21 @@
 
         </div>
 
-        <div class="container mt-5">
+        <div class="container text-center animate__animated animate__backInDown">
 
             <div id="misUsuarios">
-                <div class="">
 
-                    <h5 class="card-title text-center">Horas Extras</h5>
-                    <!-- Tabla con la nueva columna para eliminar -->
-                    <table class="table mt-3">
-                        <thead class="table-dark">
-                            <tr>
 
-                                <th>Nombre</th>
+                <h5>Horas Extras</h5>
+                <!-- Tabla con la nueva columna para eliminar -->
+                <table class="table mt-3">
 
-                                <th>Acciones</th> <!-- Nueva columna -->
-                            </tr>
-                        </thead>
-                        <tbody id="user-table-body">
-                            <!-- Los datos de usuarios se cargarán aquí -->
-                        </tbody>
-                    </table>
+                    <tbody id="user-table-body">
+                        <!-- Los datos de usuarios se cargarán aquí -->
+                    </tbody>
+                </table>
 
-                </div>
+
             </div>
         </div>
     </div>
