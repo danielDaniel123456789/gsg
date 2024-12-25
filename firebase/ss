@@ -1,10 +1,12 @@
-Nombre: dballestero
-Cédula: 123
+Fecha	  Horas	 Inicio	   Fin	 Motivo	     Aerolínea	 Periodo	    Subtotal
+2024-12-03	2	22:22	00:22	No es una extra	Lufthansa	Normal ₡1494.31	₡2988
 
-Fecha	Horas	Inicio	Fin	    Subtotal	     Período	     Motivo	    Aerolínea
-2024-12-24	1	11:11	12:11	₡1494.31	Normal ₡1494.31	Capacitación	Air Transat
-2024-12-24	3	12:33	15:33	₡4482.93	Normal ₡1494.31	Poco personal	Iberojet
-2024-12-24	1	11:01	12:01	₡1494.31	Hora ₡1494.31	Poco personal	Iberojet
+ 1
+2024-12-25	2	22:22	00:22	Cubrir personal	Lufthansa	Normal ₡1494.31	₡2988
 
-Total Horas: 5	Total Subtotal: ₡7471.55
+ 2
+2024-12-25	2	23:23	01:23	Poco personal	Lufthansa	Normal ₡1494.31	₡2988
 
+ 3
+
+Total Horas:	6						Total Subtotal:	₡8964

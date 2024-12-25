@@ -39,7 +39,27 @@
 
      
       
+        .avatar {
+      width: 27px;
+      height: 27px;
+      background-color: #3498db; /* Color de fondo */
+      border-radius: 50%; /* Hacerlo circular */
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      color: white;
+      font-size: 12px; /* Tamaño del texto */
+      font-weight: bold;
+    }
 
+    /* Si quieres un avatar con una imagen, usa esto */
+    .avatar-img {
+      width: 100px;
+      height: 100px;
+      background-size: cover;
+      background-position: center;
+      border-radius: 50%;
+    }
 
 
        
@@ -349,10 +369,13 @@
                             </tr>
                           </tfoot>
                       </table>
-                      <button id="save-changes"  class="btn btn-primary">Guardar Cambios</button>
-                      <button id="copy-summary" class="btn btn-secondary">Copiar Resumen</button>
+
+                      <div class="d-flex text-center">
+                      <button id="save-changes"  class="btn btn-primary">Guardar</button>
+                      <button id="copy-summary" class="btn btn-secondary">Copiar </button>
                       <button id="cerrarInformeGenereal" onclick="cerrarInformeGenereal()" class="btn btn-secondary">Cerrar</button>
-                    
+                     <div>
+                        <br>
                       </div>
 
                         <br>
@@ -485,34 +508,34 @@
             document.getElementById(`final-time-${index}`).textContent = finalTime;
         }
 
-
         function getSummaryText() {
-            let summary =
-                "Fecha\t  Horas\t Inicio\t   Fin\t Motivo\t  Aerolínea\t    Subtotal\n"; // Encabezados con motivo y aerolínea
+    let summary =
+        "Fecha\t  Horas\t Inicio\t   Fin\t Motivo\t     Aerolínea\t Periodo\t    Subtotal\n"; // Encabezados con periodo incluido
 
-            const rows = document.querySelectorAll('#hours-table-body tr');
+    const rows = document.querySelectorAll('#hours-table-body tr');
 
-            rows.forEach((row, index) => {
-                const date = document.getElementById(`edit-date-${index}`).value.trim();
-                const hours = document.getElementById(`edit-hours-${index}`).value.trim();
-                const time = document.getElementById(`edit-time-${index}`).value.trim();
-                const finalTime = document.getElementById(`final-time-${index}`).textContent.trim();
-                const motivo = document.getElementById(`edit-motivo-${index}`).value.trim();
-                const aerolinea = document.getElementById(`edit-aerolinea-${index}`).value.trim();
-                const subtotal = `₡${document.getElementById(`subtotal-${index}`).textContent.trim()}`;
+    rows.forEach((row, index) => {
+        const date = document.getElementById(`edit-date-${index}`).value.trim();
+        const hours = document.getElementById(`edit-hours-${index}`).value.trim();
+        const time = document.getElementById(`edit-time-${index}`).value.trim();
+        const finalTime = document.getElementById(`final-time-${index}`).textContent.trim();
+        const motivo = document.getElementById(`edit-motivo-${index}`).value.trim();
+        const aerolinea = document.getElementById(`edit-aerolinea-${index}`).value.trim();
+        const periodo = document.getElementById(`edit-period-${index}`).value.trim(); // Captura el periodo del select
+        const subtotal = `₡${document.getElementById(`subtotal-${index}`).textContent.trim()}`;
 
-                // Añadimos la fila al resumen con motivo y aerolínea
-                summary += `${date}\t${hours}\t${time}\t${finalTime}\t${motivo}\t${aerolinea}\t${subtotal}\n`;
-            });
+        // Añadimos la fila al resumen con el periodo
+        summary += `${date}\t${hours}\t${time}\t${finalTime}\t${motivo}\t${aerolinea}\t${periodo}\t${subtotal}\n`;
+    });
 
-            const totalHours = document.getElementById('total-hours').textContent.trim();
-            const totalSubtotal = `₡${document.getElementById('total-subtotal').textContent.trim()}`;
+    const totalHours = document.getElementById('total-hours').textContent.trim();
+    const totalSubtotal = `₡${document.getElementById('total-subtotal').textContent.trim()}`;
 
-            // Añadimos la fila total al resumen
-            summary += `\nTotal Horas:\t${totalHours}\t\t\t\t\tTotal Subtotal:\t${totalSubtotal}`;
+    // Añadimos la fila total al resumen
+    summary += `\nTotal Horas:\t${totalHours}\t\t\t\t\t\tTotal Subtotal:\t${totalSubtotal}`;
 
-            return summary;
-        }
+    return summary;
+}
 
         function copyToClipboard(text) {
             navigator.clipboard.writeText(text)
@@ -1487,7 +1510,10 @@
         <i class="fa fa-book fa-2x" aria-hidden="true" onclick="menuPrincipal()"  id="imgLogo" onclick="menuPrincipal()" ></i>
         <br>
         <i id="registrarUsuario" class="fa fa-user-plus fa-2x" aria-hidden="true" onclick="registrarUsuario()"></i>
-      
+      <br>
+      <div class="avatar">
+        A
+      </div>
 
 
     </div>
