@@ -1442,8 +1442,32 @@ async function addHoursToUser(userId, hours, period, startTime, date, airline, r
 
         }
 
-        function reproducirAudio(){
-            const audio = new Audio('../sonidos/sonido1.mp3'); // Reemplaza con la ruta de tu archivo MP3
+        function reproducirAudio() {
+    const ruta1 = 'sonidos/sonido1.mp3'; // Primera ruta
+    const ruta2 = '../sonidos/sonido1.mp3'; // Segunda ruta
+
+    // Función para probar si un archivo existe
+    function probarRuta(ruta) {
+        return new Promise((resolve) => {
+            const audio = new Audio(ruta);
+            audio.oncanplaythrough = () => resolve(true);
+            audio.onerror = () => resolve(false);
+        });
+    }
+
+    // Probar la primera ruta, si falla, intentar la segunda
+    probarRuta(ruta1).then((existeRuta1) => {
+        const rutaSeleccionada = existeRuta1 ? ruta1 : ruta2;
+        const audio = new Audio(rutaSeleccionada);
+        audio.play().catch((error) =>
+            console.error('Error al reproducir el sonido:', error)
+        );
+    });
+}
+
+
+        function reproducirAudioxxxx(){
+            const audio = new Audio('sonidos/sonido1.mp3'); // Reemplaza con la ruta de tu archivo MP3
     audio.play().catch(error => console.error('Error al reproducir el sonido:', error));
 
         }
