@@ -1,0 +1,205 @@
+   function showHoursModal(userId, userName) {
+            // Paso 1: Solicitar la contraseña
+            Swal.fire({
+                title: 'Ingrese su Contraseña',
+                input: 'password',
+                inputPlaceholder: 'Escribe tu contraseña',
+                showCancelButton: true,
+                confirmButtonText: 'Ingresar',
+                cancelButtonText: 'Cancelar',
+                preConfirm: (password) => {
+                    return new Promise((resolve, reject) => {
+                        const userRef = doc(db, "usuarios", userId);
+                        getDoc(userRef)
+                            .then((userDoc) => {
+                                if (userDoc.exists()) {
+                                    const userData = userDoc.data();
+                                    const storedPassword = userData.contraseya;
+
+                                    if (password.trim() === storedPassword.trim()) {
+                                        resolve();
+                                    } else {
+                                        reject("Contraseña incorrecta");
+                                    }
+                                } else {
+                                    reject("Usuario no encontrado");
+                                }
+                            })
+                            .catch((error) => {
+                                reject("Error al verificar la contraseña");
+                            });
+                    });
+                },
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // Paso 2: Mostrar el formulario para ingresar horas extra
+                    Swal.fire({
+                        title: `Agregar Horas Extra para ${userName}`,
+                        showCloseButton: true,
+                        html: `
+          <div class="mb-3">
+            <label for="swal-hours" class="form-label">Horas</label>
+            <input type="number" id="swal-hours" class="form-control" placeholder="Ingresa las horas" min="1">
+          </div>
+          <div class="mb-3">
+            <label for="swal-period" class="form-label">Periodo</label>
+            <select id="swal-period" class="form-select" aria-label="Selecciona el periodo">
+              <option value="" selected>Selecciona el periodo</option>
+              <option value="Hora ₡1494.31">Hora ₡1494.31</option>
+              <option value="Diurna ₡2241.31">Diurna ₡2241.31</option>
+              <option value="Mixta ₡2561.50">Mixta ₡2561.50</option>
+              <option value="Nocturna ₡2988.41">Nocturna ₡2988.41</option>
+            </select>
+          </div>
+          <div class="mb-3">
+            <label for="swal-start-time" class="form-label">Hora de inicio</label>
+            <input type="time" id="swal-start-time" class="form-control" aria-label="Hora de inicio">
+          </div>
+          <div class="mb-3">
+            <label for="swal-airline" class="form-label">Aerolínea</label>
+            <select id="swal-airline" class="form-select" aria-label="Selecciona la aerolínea">
+              <option value="" selected>Selecciona la aerolínea</option>
+              <option value="Arajet"> Arajet </option>
+              <option value="Edelweiss Air"> Edelweiss Air</option>
+              <option value="Air Transat"> Air Transat</option>
+              <option value="Frontier"> Frontier</option>
+              <option value="Evelop"> Evelop</option>
+              <option value="Iberojet"> Iberojet </option>
+                <option value="Lufthansa"> Lufthansa </option>
+            </select>
+          </div>
+          <div class="mb-3">
+            <label for="swal-reason" class="form-label">Motivo de la Extra</label>
+            <select id="swal-reason" class="form-select" aria-label="Selecciona el motivo">
+              <option value="No es una extra" selected>No es una extra</option>
+              <option value="Vuelo demorado">Vuelo demorado</option>
+               <option value="Vuelo demorado">Se ocupo mas tiempo para cubrir la tarea</option>
+              <option value="Capacitación">Capacitación</option>
+              <option value="Cubrir personal">Cubrir personal ausente</option>
+              <option value="Poco personal">Poco personal</option>
+            
+            </select>
+          </div>
+        `,
+                        confirmButtonText: 'Guardar',
+                        preConfirm: () => {
+                            const hours = document.getElementById("swal-hours").value.trim();
+                            const period = document.getElementById("swal-period").value;
+                            const startTime = document.getElementById("swal-start-time").value;
+                            const airline = document.getElementById("swal-airline").value;
+                            const reason = document.getElementById("swal-reason").value;
+
+                            // Validaciones
+                            if (!hours || isNaN(hours) || hours <= 0) {
+                                Swal.showValidationMessage(
+                                    "Por favor, ingresa un número válido de horas");
+                                return false;
+                            }
+
+                            if (!period) {
+                                Swal.showValidationMessage("Por favor, selecciona un periodo");
+                                return false;
+                            }
+
+                            if (!startTime) {
+                                Swal.showValidationMessage("Por favor, ingresa una hora de inicio");
+                                return false;
+                            }
+
+                            if (!airline) {
+                                Swal.showValidationMessage("Por favor, selecciona una aerolínea");
+                                return false;
+                            }
+
+                            if (!reason) {
+                                Swal.showValidationMessage("Por favor, selecciona un motivo");
+                                return false;
+                            }
+
+                            // Si todo es válido, devolver los datos
+                            return {
+                                hours,
+                                period,
+                                startTime,
+                                airline,
+                                reason
+                            };
+                        }
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            const {
+                                hours,
+                                period,
+                                startTime,
+                                airline,
+                                reason
+                            } = result.value;
+
+                            console.log(
+                                `ID: ${userId}, Horas: ${hours}, Periodo: ${period}, Hora de inicio: ${startTime}, Aerolínea: ${airline}, Motivo: ${reason}`
+                            );
+                            addHoursToUser(userId, hours, period, startTime, airline, reason);
+                        }
+                    });
+                }
+            }).catch((error) => {
+                Swal.fire("Error", error, "error");
+            });
+        }
+
+
+        async function addHoursToUser(userId, hours, period, startTime, airline, reason) {
+            try {
+                // Validación inicial
+                if (!userId) {
+                    Swal.fire("Error", "El ID del usuario no es válido", "error");
+                    return;
+                }
+
+                if (!hours || isNaN(hours) || hours <= 0 || !period || !startTime || !airline || !reason) {
+                    Swal.fire("Error", "Todos los campos son obligatorios y deben ser válidos", "error");
+                    return;
+                }
+
+                // Referencia al documento del usuario
+                const userRef = doc(db, "usuarios", userId);
+                const userDoc = await getDoc(userRef);
+
+                if (userDoc.exists()) {
+                    const currentHours = userDoc.data().horas || [];
+                    console.log("Horas actuales antes de actualizar:", currentHours);
+
+                    // Nuevo registro de horas
+                    const newHourRecord = {
+                        horas: parseInt(hours, 10),
+                        periodo: period,
+                        fecha: new Date().toISOString().split('T')[0], // Formato YYYY-MM-DD
+                        hora: startTime,
+                        aerolinea: airline,
+                        motivo: reason,
+                    };
+                    console.log("Nuevo registro de horas:", newHourRecord);
+
+                    // Actualización de las horas
+                    currentHours.push(newHourRecord);
+
+                    await updateDoc(userRef, {
+                        horas: currentHours
+                    });
+
+                    console.log("Horas actualizadas:", currentHours);
+                    reproducirAudio();
+                    Swal.fire("Éxito", "Horas extra agregadas correctamente", "success");
+
+                    // Recargar datos (asegúrate de que esta función esté definida)
+                    if (typeof cargarDatos === "function") {
+                        cargarDatos();
+                    }
+                } else {
+                    Swal.fire("Error", "Usuario no encontrado", "error");
+                }
+            } catch (error) {
+                console.error("Error al agregar horas: ", error);
+                Swal.fire("Error", "No se pudieron agregar las horas extra", "error");
+            }
+        }
