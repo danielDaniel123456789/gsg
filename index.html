@@ -190,7 +190,8 @@
                     const row = document.createElement("tr");
                     row.innerHTML = `
        
-        <td>${doc.data().name}</td>
+     <td class="text-primary"><i class="fa fa-user" aria-hidden="true"></i> ${truncate(doc.data().name, 12)}</td>
+
      
       
         <td>
@@ -1076,6 +1077,25 @@ async function addHoursToUser(userId, hours, period, startTime, date, airline, r
         }
 
 
+        function truncate(str, num) {
+            const capitalize = (s) =>
+    s.charAt(0).toUpperCase() + s.slice(1).toLowerCase();
+
+  // Capitalizar cada palabra
+  const capitalizedStr = str
+    .split(" ")
+    .map(capitalize)
+    .join(" ");
+
+  // Truncar la cadena si excede la longitud
+  if (capitalizedStr.length > num) {
+    return capitalizedStr.slice(0, num) + "...";
+  } else {
+    return capitalizedStr;
+  }
+}
+
+
         function descargar() {
             // Obtener la contraseña guardada en localStorage
             const contrasenaGuardada = localStorage.getItem('contraseña');
@@ -1515,8 +1535,8 @@ async function addHoursToUser(userId, hours, period, startTime, date, airline, r
         <div id="titulo" class="card-title text-center">
 
             <img src="./img/logo.png" width="10%" class="animate__animated animate__backInDown ">
-            <h2 class="animate__animated animate__backInDown ">Aeropuerto Internacional </h2>
-            <h2 class="animate__animated animate__backInDown "> Juan Santamaría </h2>
+            <h2 class="animate__animated animate__backInDown text-primary">Aeropuerto Internacional </h2>
+            <h2 class="animate__animated animate__backInDown text-primary"> Juan Santamaría </h2>
         </div>
 
         <div id="bodyDetalles"  class="animate__animated animate__backInDown ">
@@ -1542,7 +1562,7 @@ async function addHoursToUser(userId, hours, period, startTime, date, airline, r
             <div id="misUsuarios">
 
 
-                <h5>Horas Extras</h5>
+                <h5 class="text-primary">Horas Extras</h5>
                 <!-- Tabla con la nueva columna para eliminar -->
                 <table class="table mt-3">
 
