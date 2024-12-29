@@ -1531,6 +1531,9 @@ async function addHoursToUser(userId, hours, period, startTime, date, airline, r
     try {
         // Selecciona el elemento con ID "header"
         const header = document.getElementById("header");
+
+        // Limpia cualquier contenido previo en el header
+        header.innerHTML = ""; 
         
         // Inserta el contenido dinámico en el header
         header.innerHTML = `
@@ -1548,7 +1551,6 @@ async function addHoursToUser(userId, hours, period, startTime, date, airline, r
         console.error("Error al cargar el header: ", e);
     }
 }
-
 
 
 window.cargarHeader = cargarHeader;
