@@ -58,15 +58,15 @@
      
       
         .avatar {
-      width: 27px;
-      height: 27px;
+      width: 30px;
+      height: 30px;
       background-color: #3498db; /* Color de fondo */
       border-radius: 50%; /* Hacerlo circular */
       display: flex;
       justify-content: center;
       align-items: center;
       color: white;
-      font-size: 12px; /* Tamaño del texto */
+      font-size: 18px; /* Tamaño del texto */
       font-weight: bold;
     }
 
@@ -1442,6 +1442,11 @@ async function addHoursToUser(userId, hours, period, startTime, date, airline, r
 
         }
 
+        function frontier() {
+    window.location.href = "https://chat.whatsapp.com/H5N0y9Hx8wcFRdiB1qRPYZ";
+}
+
+
         function reproducirAudio() {
     const ruta1 = 'sonidos/sonido1.mp3'; // Primera ruta
     const ruta2 = '../sonidos/sonido1.mp3'; // Segunda ruta
@@ -1520,7 +1525,8 @@ async function addHoursToUser(userId, hours, period, startTime, date, airline, r
         }
 
 
-        
+         
+        window.frontier = frontier;
         window.reproducirAudio = reproducirAudio;
         window.confirmDeleteUser = confirmDeleteUser;
         window.registrarUsuario = registrarUsuario;
@@ -1552,6 +1558,12 @@ async function addHoursToUser(userId, hours, period, startTime, date, airline, r
         <i id="registrarUsuario" class="fa fa-user-plus fa-2x text-primary" aria-hidden="true" onclick="registrarUsuario()"></i>
       <br><br>
       <a href="https://wa.me" ><i class="fa fa-whatsapp fa-2x" aria-hidden="true"></i></a>
+
+      <br><br>
+      <div class="avatar" onclick="frontier()">
+
+        F
+      </div>
 
 
     </div>
