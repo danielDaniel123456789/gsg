@@ -349,7 +349,7 @@
                                         ).join("")}
     </select>
   </td>
-  <td data-label="Aerolinea">
+  <td data-label="Area o Aerolinea">
     <input type="text" id="edit-aerolinea-${index}" class="form-control" value="${h.aerolinea || ""}" ${isEditable ? "" : "disabled"}>
   </td>
   <td data-label="Motivo">
@@ -704,9 +704,11 @@
             <input type="date" id="swal-date" class="form-control" aria-label="Fecha">
           </div>
           <div class="mb-3">
-            <label for="swal-airline" class="form-label">Aerolínea</label>
+            <label for="swal-airline" class="form-label">Area o Aerolínea</label>
             <select id="swal-airline" class="form-select" aria-label="Selecciona la aerolínea">
-              <option value="" selected>Selecciona la aerolínea</option>
+              <option value="" selected>Selecciona area o aerolínea</option>
+               <option value="Terminal" selected>Terminal</option>
+                <option value="Recibir Equipaje" selected>Recibir Equipaje</option>
               <option value="Arajet"> Arajet </option>
               <option value="Edelweiss Air"> Edelweiss Air</option>
               <option value="Air Transat"> Air Transat</option>
