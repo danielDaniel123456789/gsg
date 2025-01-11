@@ -787,14 +787,13 @@
     });
 }
 
-
 function addHoursToUser(userId, hours, minutes, period, startTime, date, airline, reason) {
     const totalMinutes = (parseInt(hours) * 60) + parseInt(minutes);
     const endTime = calculateEndTime(startTime, totalMinutes);
 
     const userRef = doc(db, "usuarios", userId);
     updateDoc(userRef, {
-        horas: arrayUnion({
+        horasExtra: {
             horas: hours,
             minutos: minutes,
             periodo: period,
@@ -803,11 +802,11 @@ function addHoursToUser(userId, hours, minutes, period, startTime, date, airline
             fecha: date,
             aerolinea: airline,
             motivo: reason
-        })
+        }
     }).then(() => {
-        Swal.fire("Éxito", "Las horas han sido agregadas correctamente", "success");
+        Swal.fire("Éxito", "Las horas extra han sido agregadas correctamente", "success");
     }).catch((error) => {
-        Swal.fire("Error", "Hubo un problema al agregar las horas", "error");
+        Swal.fire("Error", "Hubo un problema al agregar las horas extra", "error");
     });
 }
 
