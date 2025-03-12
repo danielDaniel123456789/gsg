@@ -229,150 +229,124 @@
         }
 
         function showEditHoursModal(userId, name) {
-            let miArray = [];
-            let calcularSuma = 0;
+    let miArray = [];
+    let calcularSuma = 0;
 
-            Swal.fire({
-                title: "Ingrese su Contraseña",
-                input: "password",
-                inputPlaceholder: "Escriba su contraseña",
-                showCancelButton: true,
-                confirmButtonText: "Ingresar",
-                cancelButtonText: "Cancelar",
-                allowOutsideClick: false,
-                allowEscapeKey: false,
-                /*
-                preConfirm: (password) => {
-                    return new Promise((resolve, reject) => {
-                        const userRef = doc(db, "usuarios", userId);
-                        getDoc(userRef)
-                            .then((userDoc) => {
-                                if (userDoc.exists()) {
-                                    const userData = userDoc.data();
-                                    const storedPassword = userData.contraseya;
-        
-                                    if (password.trim() === storedPassword.trim()) {
-                                        resolve();
-                                    } else {
-                                        reject("Contraseña incorrecta");
-                                    }
-                                } else {
-                                    reject("Usuario no encontrado");
-                                }
-                            })
-                            .catch((error) => {
-                                console.error("Error al verificar la contraseña:", error);
-                                reject("Error al verificar la contraseña");
-                            });
-                    });
-                },
-                */
-            })
-                .then((result) => {
-                    if (result.isConfirmed) {
-                        // Aquí continúa la lógica si la contraseña es correcta
-                        document.getElementById("misUsuarios").style.display = "none";
-                        document.getElementById("cargarDetalles").style.display = "block";
-                        console.log(userId);
+    Swal.fire({
+        title: "Ingrese su Contraseña",
+        input: "password",
+        inputPlaceholder: "Escriba su contraseña",
+        showCancelButton: true,
+        confirmButtonText: "Ingresar",
+        cancelButtonText: "Cancelar",
+        allowOutsideClick: false,
+        allowEscapeKey: false,
+    })
+    .then((result) => {
+        if (result.isConfirmed) {
+            document.getElementById("misUsuarios").style.display = "none";
+            document.getElementById("cargarDetalles").style.display = "block";
+            console.log(userId);
 
-                        getDoc(doc(db, "usuarios", userId))
-                            .then((userDoc) => {
-                                if (userDoc.exists()) {
-                                    //  const horas = userDoc.data().horas || [];
-                                    const horas = Array.isArray(userDoc.data().horas) ? userDoc.data().horas : [userDoc.data().horas];
+            getDoc(doc(db, "usuarios", userId))
+                .then((userDoc) => {
+                    if (userDoc.exists()) {
+                        const horas = Array.isArray(userDoc.data().horas) ? userDoc.data().horas : [userDoc.data().horas];
 
-                                    const periodRates = {
-                                        "Normal ₡1494.31": 1400.31,
-                                        "Diurnas ₡2241.31 (5:00am a las 19:00pm)": 2241.31,
-                                        "Mixtas ₡2561.50 (19:00 a las 22:00)": 2561.5,
-                                        "Nocturnas ₡2988.41 (22:00 a las 5:00am)": 2988.41,
-                                    };
+                        const periodRates = {
+                            "Normal ₡1494.31": 1400.31,
+                            "Diurnas ₡2241.31 (5:00am a las 19:00pm)": 2241.31,
+                            "Mixtas ₡2561.50 (19:00 a las 22:00)": 2561.5,
+                            "Nocturnas ₡2988.41 (22:00 a las 5:00am)": 2988.41,
+                        };
 
-                                    let horasOptions = `
-                        <div class="container">
-                            <table class="table table-striped" style="width: 100%">
-                                <thead>
-                                    <tr>
-                                        <th>Horas</th>
-                                        <th>Modificar</th>
-                                        <th>Aerolinea</th>
-                                        <th>Motivo</th>
-                                        <th>Fecha</th>
-                                        <th>Hora Inicio</th>
-                                        <th>Hora Final</th>
-                                        <th>Subtotal</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="hours-table-body">`;
+                        let horasOptions = `
+                            <div class="container">
+                                <table class="table table-striped" style="width: 100%">
+                                    <thead>
+                                        <tr>
+                                            <th>Horas</th>
+                                            <th>Modificar</th>
+                                            <th>Aerolinea</th>
+                                            <th>Motivo</th>
+                                            <th>Fecha</th>
+                                            <th>Hora Inicio</th>
+                                            <th>Hora Final</th>
+                                            <th>Subtotal</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="hours-table-body">`;
 
-                                    let totalHoras = 0;
-                                    let totalSubtotal = 0;
-                                    console.log(horas);
-                                    horas.forEach((h, index) => {
-                                        const isEditable = index === horas.length - 1; // Solo la última fila es editable
-                                        const date = new Date(h.fecha);
-                                        const formattedDate = h.fecha ? date.toISOString().split("T")[0] : "";
-                                        const formattedTime = h.hora || "00:00";
-                                        const rate = periodRates[h.periodo] || 0;
+                        let totalHoras = 0;
+                        let totalSubtotal = 0;
+                        console.log(horas);
 
-                                        // Extraemos solo el número de la columna 'Inserto'
-                                        const insertValue = h.periodo ? h.periodo.replace(/\(.*?\)/g, "").trim() : "0";
-                                        const subtotal = parseFloat(insertValue) || 0;
+                        horas.forEach((h, index) => {
+                            const isEditable = index === horas.length - 1; // Solo la última fila es editable
+                            const date = new Date(h.fecha);
+                            const formattedDate = h.fecha ? date.toISOString().split("T")[0] : "";
+                            const formattedTime = h.hora || "00:00";
+                            const rate = periodRates[h.periodo] || 0;
 
-                                        // Acumula las horas y subtotales de todas las filas
-                                        totalHoras += h.horas || 0;
-                                        totalSubtotal += subtotal;
+                            const insertValue = h.periodo ? h.periodo.replace(/\(.*?\)/g, "").trim() : "0";
+                            const subtotal = parseFloat(insertValue) || 0;
 
-                                        // Agregar a la tabla
-                                        horasOptions += `
-                            <tr>
-                                <td data-label="Horas">
-                                    <input type="number" id="edit-hours-${index}" class="form-control" value="${h.horas || ""}" oninput="updateSubtotal(${index})" ${isEditable ? "" : "disabled"}>
-                                </td>
-                                <td data-label="Modificar">
-                                    <select id="edit-period-${index}" class="form-control" onchange="updateSubtotal(${index})" ${isEditable ? "" : "disabled"}>
-                                        ${Object.keys(periodRates).map((period) =>
-                                            `<option value="${period}" ${h.periodo === period ? "selected" : ""}>${period}</option>`
-                                        ).join("")}
-                                    </select>
-                                </td>
-                                <td data-label="Area o Aerolinea">
-                                    <input type="text" id="edit-aerolinea-${index}" class="form-control" value="${h.aerolinea || ""}" ${isEditable ? "" : "disabled"}>
-                                </td>
-                                <td data-label="Motivo">
-                                    <input type="text" id="edit-motivo-${index}" class="form-control" value="${h.motivo || ""}" ${isEditable ? "" : "disabled"}>
-                                </td>
-                                <td data-label="Fecha">
-                                    <input type="date" id="edit-date-${index}" class="form-control" value="${formattedDate}">
-                                </td>
-                                <td data-label="Hora Inicio">
-                                    <input type="time" id="edit-time-${index}" class="form-control" value="${formattedTime}" onchange="updateFinalTime(${index})">
-                                </td>
-                                <td id="final-time-${index}" class="text-end" data-label="Hora Final">
-                                    ${calculateFinalTime(formattedTime, h.horas || 0)}
-                                </td>
-                                <td id="subtotal-${index}" class="text-end" data-label="Subtotal">
-                                    ${multiplicarValores(h.periodo ? h.periodo.replace(/[^0-9.,]/g, "").trim() : "0", h.horas)}
-                                </td>
-                            </tr>`;
+                            totalHoras += h.horas || 0;
+                            totalSubtotal += subtotal;
 
-                                        // Calcular el subtotal para cada fila y almacenarlo en miArray
-                                        miArray.push(multiplicarValores(h.periodo ? h.periodo.replace(/[^0-9.,]/g, "").trim() : "0", h.horas));
-                                    });
+                            // Convertir horas y minutos a formato "HH:mm"
+                            const hoursDecimal = h.horas || 0;
+                            const hours = Math.floor(hoursDecimal); // Parte entera, horas
+                            const minutes = Math.round((hoursDecimal - hours) * 60); // Parte decimal, minutos
 
-                                    // Calcular la suma total
-                                    for (let i = 0; i < miArray.length; i++) {
-                                        calcularSuma += miArray[i];
-                                        console.log('Sumar array: ' + calcularSuma);
-                                    }
+                            const horasFormato = `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
 
-                                    horasOptions += `
+                            horasOptions += `
+                                <tr>
+                                    <td data-label="Horas">
+                                        <input type="number" id="edit-hours-${index}" class="form-control" value="${horasFormato}" oninput="updateSubtotal(${index})" ${isEditable ? "" : "disabled"}>
+                                    </td>
+                                    <td data-label="Modificar">
+                                        <select id="edit-period-${index}" class="form-control" onchange="updateSubtotal(${index})" ${isEditable ? "" : "disabled"}>
+                                            ${Object.keys(periodRates).map((period) =>
+                                                `<option value="${period}" ${h.periodo === period ? "selected" : ""}>${period}</option>`
+                                            ).join("")}
+                                        </select>
+                                    </td>
+                                    <td data-label="Area o Aerolinea">
+                                        <input type="text" id="edit-aerolinea-${index}" class="form-control" value="${h.aerolinea || ""}" ${isEditable ? "" : "disabled"}>
+                                    </td>
+                                    <td data-label="Motivo">
+                                        <input type="text" id="edit-motivo-${index}" class="form-control" value="${h.motivo || ""}" ${isEditable ? "" : "disabled"}>
+                                    </td>
+                                    <td data-label="Fecha">
+                                        <input type="date" id="edit-date-${index}" class="form-control" value="${formattedDate}">
+                                    </td>
+                                    <td data-label="Hora Inicio">
+                                        <input type="time" id="edit-time-${index}" class="form-control" value="${formattedTime}" onchange="updateFinalTime(${index})">
+                                    </td>
+                                    <td id="final-time-${index}" class="text-end" data-label="Hora Final">
+                                        ${calculateFinalTime(formattedTime, h.horas || 0)}
+                                    </td>
+                                    <td id="subtotal-${index}" class="text-end" data-label="Subtotal">
+                                        ${multiplicarValores(h.periodo ? h.periodo.replace(/[^0-9.,]/g, "").trim() : "0", h.horas)}
+                                    </td>
+                                </tr>`;
+
+                            miArray.push(multiplicarValores(h.periodo ? h.periodo.replace(/[^0-9.,]/g, "").trim() : "0", h.horas));
+                        });
+
+                        for (let i = 0; i < miArray.length; i++) {
+                            calcularSuma += miArray[i];
+                        }
+
+                        horasOptions += `
                         </tbody>
                         <tfoot>
                             <tr>
                                 <th id="total-hours">${totalHoras}</th>
                                 <th colspan="5" class="text-end">Total Subtotal</th>
-                                <th id="total-subtotal" class="text-end">${calcularSuma}</th>
+                                <th id="total-subtotal" class="text-end">${calcularSuma.toFixed(2)}</th>
                             </tr>
                         </tfoot>
                     </table>
@@ -385,26 +359,26 @@
                     <br>
                 </div>`;
 
-                                    document.getElementById("cargarDetalles").innerHTML = horasOptions;
+                        document.getElementById("cargarDetalles").innerHTML = horasOptions;
 
-                                    document.getElementById("save-changes").onclick = function () {
-                                        salvarCambios(horas, userId, name); // Pasar horas y userId
-                                    };
+                        document.getElementById("save-changes").onclick = function () {
+                            salvarCambios(horas, userId, name);
+                        };
 
-                                    document.getElementById('copy-summary').addEventListener('click', () => {
-                                        const summary = getSummaryText();
-                                        copyToClipboard(summary);
-                                    });
-                                }
-                            });
-                    }
-                })
-                .catch((error) => {
-                    if (error !== "cancelado") {
-                        Swal.fire("Error", error, "error");
+                        document.getElementById('copy-summary').addEventListener('click', () => {
+                            const summary = getSummaryText();
+                            copyToClipboard(summary);
+                        });
                     }
                 });
         }
+    })
+    .catch((error) => {
+        if (error !== "cancelado") {
+            Swal.fire("Error", error, "error");
+        }
+    });
+}
 
         function updateSubtotal(index) {
             const horasInput = document.getElementById(`edit-hours-${index}`);
@@ -979,9 +953,9 @@ function addHoursToUser(userId, hours, minutes, period, startTime, date, airline
     // Crear el dropdown para las opciones
     const opcionesDropdown = `
         <ul id="menuopcionesDropdown" class="mb-3">
-            <li class="nav-item btn btn-primary" onclick="deleteUser()" ><i class="fa fa-trash" aria-hidden="true"></i></a></li>
-            <li class="nav-item btn btn-primary" id="btnCopiarResumen" ><a class="nav-link" href="#"><i class="fa fa-clone" aria-hidden="true"></i></a></li>
-            <li class="nav-item btn btn-primary" id="btnDescargarPDF" ><a class="nav-link" href="#">PDF</a></li>
+            <li class="nav-item btn btn-primary" onclick="deleteUser()"><i class="fa fa-trash" aria-hidden="true"></i></a></li>
+            <li class="nav-item btn btn-primary" id="btnCopiarResumen"><a class="nav-link" href="#"><i class="fa fa-clone" aria-hidden="true"></i></a></li>
+            <li class="nav-item btn btn-primary" id="btnDescargarPDF"><a class="nav-link" href="#">PDF</a></li>
             <li class="nav-item btn btn-primary" onclick="limpiarHoras()"><a class="nav-link" id="btnLimpiar" href="#"><i class="fa fa-hourglass-half" aria-hidden="true"></i></a></li>
             <li class="nav-item btn btn-primary" id="btnCerrarInforme">
                 <a class="nav-link" href="#"><i class="fa fa-window-close" aria-hidden="true"></i></a>
@@ -1003,20 +977,34 @@ function addHoursToUser(userId, hours, minutes, period, startTime, date, airline
                 const horas = usuario.horas || [];
 
                 let totalHoras = 0;
+                let totalMinutos = 0;
                 let totalMonto = 0;
 
                 let filasHoras = horas.map((h) => {
                     const fecha = h.fecha ? h.fecha : "Sin fecha";
                     const horaInicio = h.horaInicio || "Sin hora";
                     const horaFin = h.horaFin || "Sin hora fin";
-                    const cantidadHoras = parseFloat(h.horas) || 0; // Asegurarse de que sea un número
+                    const cantidadHoras = parseInt(h.horas) || 0;
+                    const cantidadMinutos = parseInt(h.minutos) || 0;
+
+                    // Sumar las horas y minutos
+                    totalHoras += cantidadHoras;
+                    totalMinutos += cantidadMinutos;
+
+                    // Convertir minutos a horas si es necesario
+                    if (totalMinutos >= 60) {
+                        totalHoras += Math.floor(totalMinutos / 60);
+                        totalMinutos = totalMinutos % 60;
+                    }
+
                     const aerolinea = h.aerolinea || "Sin aerolínea";
                     const motivo = h.motivo || "Sin motivo";
                     const periodo = h.periodo || "Sin periodo";
 
                     // Cálculo de hora fin a partir de horaInicio + horas
                     let horaInicioDate = new Date(`2025-01-12T${horaInicio}:00`); // Usa la fecha del día + hora de inicio
-                    let horaFinDate = new Date(horaInicioDate.getTime() + (cantidadHoras * 60 * 60 * 1000)); // Sumar horas
+                    let totalHorasTrabajadas = (cantidadHoras * 60) + cantidadMinutos; // Total en minutos
+                    let horaFinDate = new Date(horaInicioDate.getTime() + (totalHorasTrabajadas * 60 * 1000)); // Sumar minutos
 
                     const horaFinFormat = `${horaFinDate.getHours().toString().padStart(2, "0")}:${horaFinDate.getMinutes().toString().padStart(2, "0")}`;
 
@@ -1027,14 +1015,13 @@ function addHoursToUser(userId, hours, minutes, period, startTime, date, airline
                         monto = parseFloat(periodoParts[1].replace(',', ''));
                     }
 
-                    const subtotal = cantidadHoras * monto;
+                    const subtotal = totalHorasTrabajadas / 60 * monto;
 
-                    totalHoras += cantidadHoras;
                     totalMonto += subtotal;
 
                     return `
                         <tr>
-                            <td>${cantidadHoras}</td>
+                            <td>${cantidadHoras}:${cantidadMinutos.toString().padStart(2, "0")}</td>
                             <td>${periodo}</td>
                             <td>${fecha}</td>
                             <td>${horaInicio}</td>
@@ -1045,6 +1032,10 @@ function addHoursToUser(userId, hours, minutes, period, startTime, date, airline
                         </tr>
                     `;
                 }).join("");
+
+                // Convertir totalHoras y totalMinutos a formato hh:mm
+                const totalHorasFinales = Math.floor(totalHoras + totalMinutos / 60); // Parte entera para horas
+                const totalMinutosFinales = totalMinutos % 60; // Resto para minutos
 
                 usuariosData += `
                     <div class="container p-2">
@@ -1067,7 +1058,7 @@ function addHoursToUser(userId, hours, minutes, period, startTime, date, airline
                             </tbody>
                             <tfoot>
                                 <tr>
-                                    <th>${totalHoras.toFixed(2)}</th>
+                                    <th>${totalHorasFinales}:${totalMinutosFinales.toString().padStart(2, "0")}</th>
                                     <th></th>
                                     <th colspan="4"></th>
                                     <th>Subtotal General</th>
@@ -1099,6 +1090,7 @@ function addHoursToUser(userId, hours, minutes, period, startTime, date, airline
             Swal.fire("Error", "No se pudieron cargar los datos de los usuarios", "error");
         });
 }
+
 
 
         function truncate(str, num) {
@@ -1654,5 +1646,6 @@ function addHoursToUser(userId, hours, minutes, period, startTime, date, airline
     emailjs.init('_l4EbnoapfSxp62zS')
 </script>
 <script src="./script.js"></script>
+<script src="./firebase/formatDecimalToHours.js"></script>
 
 </html>

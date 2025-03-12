@@ -171,14 +171,13 @@
 
                     // Nuevo registro de horas
                     const newHourRecord = {
-                        horas: formatDecimalToHours(parseFloat(hours)), // Convertir a formato HH:MM
+                        horas: parseInt(hours, 10),
                         periodo: period,
                         fecha: new Date().toISOString().split('T')[0], // Formato YYYY-MM-DD
                         hora: startTime,
                         aerolinea: airline,
                         motivo: reason,
                     };
-                    
                     console.log("Nuevo registro de horas:", newHourRecord);
 
                     // Actualización de las horas
