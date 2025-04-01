@@ -1,4 +1,28 @@
 function cargarHora() {
+    const hoy = new Date();
+    const mesActual = hoy.getMonth() + 1; // Mes actual (1-12)
+    const añoActual = hoy.getFullYear();
+
+    function obtenerDiasDelMes(año, mes) {
+        return new Date(año, mes, 0).getDate(); // Obtiene el último día del mes
+    }
+
+    // Generar los últimos dos meses completos con sus días en orden descendente
+    const fechas = [];
+    for (let i = 0; i < 2; i++) {
+        let mes = mesActual - i;
+        let año = añoActual;
+        if (mes <= 0) { // Si el mes es enero o anterior, retrocede un año
+            mes += 12;
+            año -= 1;
+        }
+
+        const diasDelMes = obtenerDiasDelMes(año, mes);
+        for (let dia = diasDelMes; dia >= 1; dia--) { // Iterar de mayor a menor
+            fechas.push(`${año}-${mes.toString().padStart(2, '0')}-${dia.toString().padStart(2, '0')}`);
+        }
+    }
+
     Swal.fire({
         title: 'Registrar Horas',
         html: `
@@ -14,9 +38,30 @@ function cargarHora() {
             <label class='form-label mt-2'>Hora de Fin</label>
             <input id='horaFin' class='form-control' type='time'>
             <label class='form-label mt-2'>Fecha</label>
-            <input id='fecha' class='form-control' type='date'>
+            <select id='fecha' class='form-select'>
+                ${fechas.map(fecha => `<option value="${fecha}">${fecha}</option>`).join('')}
+            </select>
             <label class='form-label mt-2'>Motivo</label>
-            <input id='motivo' class='form-control' type='text' placeholder='Motivo del registro'>
+            <select id='motivo' class='form-select'>
+                <option value="" selected>Selecciona el motivo</option>
+                <option value="Terminal">Terminal</option>
+                <option value="Recibir Equipaje">Recibir Equipaje</option>
+                <option value="Arajet">Arajet</option>
+                <option value="Edelweiss Air">Edelweiss Air</option>
+                <option value="Air Transat">Air Transat</option>
+                <option value="Frontier">Frontier</option>
+                <option value="Evelop">Evelop</option>
+                <option value="Iberojet">Iberojet</option>
+                <option value="Lufthansa">Lufthansa</option>
+                <option value="Poco personal">Me llamaron para cubrir counter</option>
+                <option value="Poco personal">Me llamaron para recibir un vuelo</option>
+                <option value="Vuelo demorado">Vuelo demorado</option>
+                <option value="Se ocupó más tiempo para cubrir la tarea">Se ocupó más tiempo para cubrir la tarea</option>
+                <option value="Capacitación">Capacitación</option>
+                <option value="Cubrir personal">Cubrir personal ausente</option>
+                <option value="Poco personal">Poco personal</option>
+                <option value="No es una extra">No es una extra</option>
+            </select>
             <label class='form-label mt-2'>Total de Horas</label>
             <input id='totalHoras' class='form-control' type='number' step='0.01' placeholder='Ingrese las horas trabajadas'>
             <label class='form-label mt-2'>Total de Minutos</label>

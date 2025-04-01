@@ -4,16 +4,11 @@ function actualizarTabla() {
     const tbody = document.getElementById('tabla-registros');
     tbody.innerHTML = '';
 
-    registros.forEach(registro => {
-        // Extraer solo el valor numérico del turno (por ejemplo, "₡2241.31" -> "2241.31")
-        const turnoValor = parseFloat(registro.turnoValor); // Usamos el valor ya extraído
-
-        // Convertir totalHoras y totalMinutos a números para el cálculo
+    registros.forEach((registro, index) => {
+        const turnoValor = parseFloat(registro.turnoValor);
         const horasTrabajadas = parseFloat(registro.totalHoras);
         const minutosTrabajados = parseInt(registro.totalMinutos);
-
-        // Calcular el subtotal: horas * valor por hora + minutos * valor por minuto
-        const valorPorMinuto = turnoValor / 60; // El valor por minuto sería el valor por hora dividido entre 60
+        const valorPorMinuto = turnoValor / 60;
         const subtotal = (horasTrabajadas * turnoValor) + (minutosTrabajados * valorPorMinuto);
 
         const fila = `<tr>
@@ -25,7 +20,12 @@ function actualizarTabla() {
             <td>${registro.totalHoras} horas</td>
             <td>${registro.totalMinutos} minutos</td>
             <td>${turnoValor.toFixed(2)}</td>
-            <td>${subtotal.toFixed(2)}</td> <!-- Nueva columna con el subtotal calculado -->
+            <td>${subtotal.toFixed(2)}</td>
+            <td>
+                <button class="btn btn-danger" onclick="eliminarRegistro(${index})">
+                    <i class="bi bi-trash"></i> Eliminar
+                </button>
+            </td>
         </tr>`;
         tbody.innerHTML += fila;
     });

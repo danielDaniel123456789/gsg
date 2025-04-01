@@ -24,6 +24,7 @@
                 <th>Total Minutos</th>
                 <th>Valor</th>
                 <th>Subtotal</th> <!-- Nueva columna para el subtotal -->
+                <th>Eliminar</th> <!-- Nueva columna para el icono de eliminar -->
             </tr>
         </thead>
         <tbody id="tabla-registros"></tbody>
@@ -32,31 +33,18 @@
     <!-- Cargar los archivos JS al final -->
     <script src="cargarHora.js"></script>
     <script src="actualizarTabla.js"></script>
-
+    <script src="eliminarRegistro.js"></script>
+    <script src="limpiarDatos.js"></script>
     <script>
         // Evento que carga los datos desde el localStorage al cargar la página
         document.addEventListener('DOMContentLoaded', actualizarTabla);
 
         // Función para limpiar los datos almacenados en localStorage
-        function limpiarDatos() {
-            // Preguntar al usuario si está seguro de eliminar los datos
-            Swal.fire({
-                title: '¿Estás seguro?',
-                text: "Esta acción eliminará todos los registros de horas guardados.",
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonText: 'Sí, eliminar',
-                cancelButtonText: 'Cancelar'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    // Limpiar el localStorage
-                    localStorage.removeItem('registroHoras');
-                    // Actualizar la tabla para reflejar que los datos se han borrado
-                    actualizarTabla();
-                    Swal.fire('¡Eliminado!', 'Los datos han sido eliminados.', 'success');
-                }
-            });
-        }
+       
+        // Función para eliminar una fila
+       
+
+       
     </script>
 </body>
 </html>
